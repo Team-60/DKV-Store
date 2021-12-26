@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+message GetRequest {
+  string key = 1;
+}
+
+message GetResponse {
+  string key = 1;
+  string value = 2;
+}
+
+service master {
+  rpc Get (GetRequest) returns (GetResponse) {}
+}
