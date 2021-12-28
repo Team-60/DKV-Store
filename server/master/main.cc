@@ -1,4 +1,4 @@
-#include "server.h"
+#include "MasterImpl.h"
 
 void RunServer() {
   std::string server_address("127.0.0.1:8080");
