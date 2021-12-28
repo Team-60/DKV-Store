@@ -78,9 +78,16 @@ target_link_libraries(master_grpc_proto
   ${_PROTOBUF_LIBPROTOBUF})
 
 # add executable server.cc
-add_executable(master "server/master/server.cc"
+add_executable(master "server/master/main.cc"
   ${master_proto_srcs}
   ${master_grpc_srcs})
 target_link_libraries(master
+  ${_GRPC_GRPCPP}
+  ${_PROTOBUF_LIBPROTOBUF})
+
+add_executable(client "client/client.cc"
+  ${master_proto_srcs}
+  ${master_grpc_srcs})
+target_link_libraries(client
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF})
