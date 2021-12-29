@@ -4,15 +4,15 @@
 
 #include "leveldb/db.h"
 #include <grpcpp/grpcpp.h>
-#include "master.grpc.pb.h"
+#include "volume_server.grpc.pb.h"
 
-class MasterImpl final : public Master::Service {
+class VolumeServer final : public VolumeServerService::Service {
 
   public:
-    MasterImpl(int id_) : id(id_) {
+    VolumeServer(int server_id_) : server_id(server_id_) {
       // db name
       std::ostringstream buffer;
-      buffer << "db-master-" << this->id;
+      buffer << "db-volume-server-" << this->server_id;
       this->db_name = buffer.str();
       
       // create db
@@ -23,7 +23,7 @@ class MasterImpl final : public Master::Service {
       assert (status.ok());
     }
 
-    ~MasterImpl() {
+    ~VolumeServer() {
       delete this->db;
     }
 
@@ -40,7 +40,6 @@ class MasterImpl final : public Master::Service {
 
       response->set_key(request->key());
       response->set_value(value);
-
       return grpc::Status::OK;
     }
 
@@ -54,7 +53,6 @@ class MasterImpl final : public Master::Service {
       }
 
       this->db->Put(leveldb::WriteOptions(), request->key(), request->value());
-
       return grpc::Status::OK;
     }
 
@@ -68,12 +66,11 @@ class MasterImpl final : public Master::Service {
       }
 
       this->db->Delete(leveldb::WriteOptions(), request->key());
-
       return grpc::Status::OK;
     }
 
   private:
-    int id;
+    int server_id;
     std::string db_name;
     leveldb::DB* db;
 
