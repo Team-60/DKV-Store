@@ -3,11 +3,11 @@
 
 class Client {
   std::unique_ptr<Master::Stub> stub_;
+  
   public: 
     Client(std::shared_ptr<grpc::Channel> channel) : stub_(Master::NewStub(channel)) {}
 
     std::string Get(const std::string& key) {
-      
       GetRequest request;
       request.set_key(key);
       
@@ -26,7 +26,6 @@ class Client {
     }
 
     std::string Put(const std::string& key, const std::string& value) {
-
       PutRequest request;
       request.set_key(key);
       request.set_value(value);
@@ -43,11 +42,9 @@ class Client {
         std::cout << status.error_code() << ": " << status.error_message() << std::endl;
         return "RPC Failed";
       }
-
     }
 
     std::string Delete(const std::string& key, const std::string& value) {
-
       DeleteRequest request;
       request.set_key(key);
       request.set_value(value);
@@ -69,7 +66,6 @@ class Client {
 };
 
 int main() {
-
   std::string server_address("127.0.0.1:8080");
   Client client(grpc::CreateChannel(server_address, grpc::InsecureChannelCredentials()));
 

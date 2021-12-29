@@ -28,7 +28,6 @@ class MasterImpl final : public Master::Service {
     }
 
     grpc::Status Get(grpc::ServerContext* context, const GetRequest* request, GetResponse* response) override {
-
       std::cout << "Get : key=" << request->key() << std::endl;
 
       std::string value;
@@ -46,7 +45,6 @@ class MasterImpl final : public Master::Service {
     }
 
     grpc::Status Put(grpc::ServerContext* context, const PutRequest* request, google::protobuf::Empty* response) override {
-
       std::cout << "Put : key=" << request->key() << " Value=" << request->value() << std::endl;
 
       std::string value;
