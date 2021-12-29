@@ -1,15 +1,34 @@
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <map>
 
+#include "leveldb/db.h"
 #include <grpcpp/grpcpp.h>
-
 #include "master.grpc.pb.h"
 
 class MasterImpl final : public Master::Service {
 
   public:
+    MasterImpl(int id_) : id(id_) {
+      // db name
+      std::ostringstream buffer;
+      buffer << "db-master-" << this->id;
+      this->db_name = buffer.str();
+      
+      // create db
+      leveldb::Options options;
+      options.create_if_missing = true;
+
+      leveldb::Status status = leveldb::DB::Open(options, this->db_name, &this->db);
+      assert (status.ok());
+    }
+
+    ~MasterImpl() {
+      delete this->db;
+    }
+
     grpc::Status Get(grpc::ServerContext* context, const GetRequest* request, GetResponse* response) override {
 
       std::cout << "Get : key=" << request->key() << std::endl;
@@ -53,5 +72,8 @@ class MasterImpl final : public Master::Service {
 
   private:
     std::map<std::string, std::string> keyValueMap;
+    int id;
+    std::string db_name;
+    leveldb::DB* db;
 
 };

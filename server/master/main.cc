@@ -3,7 +3,7 @@
 void RunServer() {
   std::string server_address("127.0.0.1:8080");
 
-  MasterImpl master;
+  MasterImpl master(1);
 
   ::grpc::ServerBuilder builder;
   builder.AddListeningPort(server_address, ::grpc::InsecureServerCredentials());
