@@ -1,4 +1,5 @@
 # Create build directory
+rm -rf cmake
 mkdir -p cmake/build
 
 pushd cmake/build
