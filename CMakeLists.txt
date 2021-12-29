@@ -23,6 +23,9 @@ project(DKVStore CXX)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
+# find thread library  
+find_package(Threads REQUIRED)
+
 # Assumes that gRPC and all its dependencies are already installed
 # on this system, so they can be located by find_package().
 
@@ -84,6 +87,13 @@ add_executable(master "server/master/main.cc"
 target_link_libraries(master
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF})
+# add libraries and directores for leveldb
+target_link_libraries(master 
+  ${CMAKE_SOURCE_DIR}/leveldb/build/libleveldb.a)
+target_link_libraries(master 
+  ${CMAKE_THREAD_LIBS_INIT})
+target_include_directories(master PUBLIC 
+  ${CMAKE_SOURCE_DIR}/leveldb/include/)
 
 add_executable(client "client/client.cc"
   ${master_proto_srcs}
