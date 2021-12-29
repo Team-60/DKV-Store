@@ -41,7 +41,7 @@ set(_PROTOBUF_PROTOC $<TARGET_FILE:protobuf::protoc>)
 
 # Find gRPC installation
 # Looks for gRPCConfig.cmake file installed by gRPC's cmake installation.
-find_package(gRPC PATHS /usr/local/grpc NO_DEFAULT_PATH CONFIG REQUIRED)
+find_package(gRPC CONFIG REQUIRED)
 message(STATUS "Using gRPC ${gRPC_VERSION}")
 
 set(_GRPC_GRPCPP gRPC::grpc++)
@@ -89,11 +89,11 @@ target_link_libraries(master
   ${_PROTOBUF_LIBPROTOBUF})
 # add libraries and directores for leveldb
 target_link_libraries(master 
-  ${CMAKE_SOURCE_DIR}/leveldb/build/libleveldb.a)
+  ${LEVELDB_PREFIX}/build/libleveldb.a)
 target_link_libraries(master 
   ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(master PUBLIC 
-  ${CMAKE_SOURCE_DIR}/leveldb/include/)
+  ${LEVELDB_PREFIX}/include/)
 
 add_executable(client "client/client.cc"
   ${master_proto_srcs}
