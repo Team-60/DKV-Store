@@ -48,56 +48,56 @@ set(_GRPC_GRPCPP gRPC::grpc++)
 set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:gRPC::grpc_cpp_plugin>)
 
 # Proto filee
-get_filename_component(master_proto "./protos/master.proto" ABSOLUTE)
-get_filename_component(master_proto_path "${master_proto}" PATH)
+get_filename_component(volume_server_proto "./protos/volume_server.proto" ABSOLUTE)
+get_filename_component(volume_server_proto_path "${volume_server_proto}" PATH)
 
 # Generated sources
-set(master_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/master.pb.cc")
-set(master_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/master.pb.h")
-set(master_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/master.grpc.pb.cc")
-set(master_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/master.grpc.pb.h")
+set(volume_server_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/volume_server.pb.cc")
+set(volume_server_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/volume_server.pb.h")
+set(volume_server_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/volume_server.grpc.pb.cc")
+set(volume_server_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/volume_server.grpc.pb.h")
 
 add_custom_command(
-  OUTPUT "${master_proto_srcs}" "${master_proto_hdrs}" "${master_grpc_srcs}" "${master_grpc_hdrs}"
+  OUTPUT "${volume_server_proto_srcs}" "${volume_server_proto_hdrs}" "${volume_server_grpc_srcs}" "${volume_server_grpc_hdrs}"
   COMMAND ${_PROTOBUF_PROTOC}
   ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
     --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
-    -I "${master_proto_path}"
+    -I "${volume_server_proto_path}"
     --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
-    "${master_proto}"
-  DEPENDS "${master_proto}")
+    "${volume_server_proto}"
+  DEPENDS "${volume_server_proto}")
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-# master_grpc_proto
-add_library(master_grpc_proto
-  ${master_grpc_srcs}
-  ${master_grpc_hdrs}
-  ${master_proto_srcs}
-  ${master_proto_hdrs})
-target_link_libraries(master_grpc_proto
+# volume_server_grpc_proto
+add_library(volume_server_grpc_proto
+  ${volume_server_grpc_srcs}
+  ${volume_server_grpc_hdrs}
+  ${volume_server_proto_srcs}
+  ${volume_server_proto_hdrs})
+target_link_libraries(volume_server_grpc_proto
   ${_REFLECTION}
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF})
 
 # add executable server.cc
-add_executable(master "server/master/main.cc"
-  ${master_proto_srcs}
-  ${master_grpc_srcs})
-target_link_libraries(master
+add_executable(volume_server "server/volume_server/main.cc"
+  ${volume_server_proto_srcs}
+  ${volume_server_grpc_srcs})
+target_link_libraries(volume_server
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF})
 # add libraries and directores for leveldb
-target_link_libraries(master 
+target_link_libraries(volume_server 
   ${CMAKE_SOURCE_DIR}/leveldb/build/libleveldb.a)
-target_link_libraries(master 
+target_link_libraries(volume_server 
   ${CMAKE_THREAD_LIBS_INIT})
-target_include_directories(master PUBLIC 
+target_include_directories(volume_server PUBLIC 
   ${CMAKE_SOURCE_DIR}/leveldb/include/)
 
 add_executable(client "client/client.cc"
-  ${master_proto_srcs}
-  ${master_grpc_srcs})
+  ${volume_server_proto_srcs}
+  ${volume_server_grpc_srcs})
 target_link_libraries(client
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF})
