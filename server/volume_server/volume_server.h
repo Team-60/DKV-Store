@@ -6,10 +6,10 @@
 #include <grpcpp/grpcpp.h>
 #include "volume_server.grpc.pb.h"
 
-class VolumeServerImpl final : public VolumeServer::Service {
+class VolumeServer final : public VolumeServerService::Service {
 
   public:
-    VolumeServerImpl(int server_id_) : server_id(server_id_) {
+    VolumeServer(int server_id_) : server_id(server_id_) {
       // db name
       std::ostringstream buffer;
       buffer << "db-volume-server-" << this->server_id;
@@ -23,7 +23,7 @@ class VolumeServerImpl final : public VolumeServer::Service {
       assert (status.ok());
     }
 
-    ~VolumeServerImpl() {
+    ~VolumeServer() {
       delete this->db;
     }
 

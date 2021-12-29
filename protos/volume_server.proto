@@ -20,7 +20,7 @@ message DeleteRequest {
   string value = 2;
 }
 
-service VolumeServer {
+service VolumeServerService {
   rpc Get (GetRequest) returns (GetResponse) {}
   rpc Put (PutRequest) returns (google.protobuf.Empty) {}
   rpc Delete (DeleteRequest) returns (google.protobuf.Empty) {}

@@ -2,10 +2,10 @@
 #include "volume_server.grpc.pb.h"
 
 class Client {
-  std::unique_ptr<VolumeServer::Stub> stub_;
+  std::unique_ptr<VolumeServerService::Stub> stub_;
   
   public: 
-    Client(std::shared_ptr<grpc::Channel> channel) : stub_(VolumeServer::NewStub(channel)) {}
+    Client(std::shared_ptr<grpc::Channel> channel) : stub_(VolumeServerService::NewStub(channel)) {}
 
     std::string Get(const std::string& key) {
       GetRequest request;
