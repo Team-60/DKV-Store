@@ -87,22 +87,14 @@ add_executable(volume_server "server/volume_server/main.cc"
 target_link_libraries(volume_server
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF})
+
 # add libraries and directores for leveldb
-<<<<<<< HEAD
-target_link_libraries(master 
+target_link_libraries(volume_server 
   ${LEVELDB_PREFIX}/build/libleveldb.a)
-target_link_libraries(master 
-  ${CMAKE_THREAD_LIBS_INIT})
-target_include_directories(master PUBLIC 
-  ${LEVELDB_PREFIX}/include/)
-=======
-target_link_libraries(volume_server 
-  ${CMAKE_SOURCE_DIR}/leveldb/build/libleveldb.a)
-target_link_libraries(volume_server 
+target_link_libraries(volume_server
   ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(volume_server PUBLIC 
-  ${CMAKE_SOURCE_DIR}/leveldb/include/)
->>>>>>> 3d2809ff0ed9441f714b1cf919cceca3441e1b49
+  ${LEVELDB_PREFIX}/include/)
 
 add_executable(client "client/client.cc"
   ${volume_server_proto_srcs}
