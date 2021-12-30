@@ -12,9 +12,7 @@ class Client {
       request.set_key(key);
       
       GetResponse response;
-
       grpc::ClientContext context;
-
       grpc::Status status = stub_->Get(&context, request, &response);
 
       if (status.ok()) {
@@ -31,9 +29,7 @@ class Client {
       request.set_value(value);
 
       google::protobuf::Empty response;
-
       grpc::ClientContext context;
-
       grpc::Status status = stub_->Put(&context, request, &response);
 
       if (status.ok()) {
@@ -50,9 +46,7 @@ class Client {
       request.set_value(value);
 
       google::protobuf::Empty response;
-
       grpc::ClientContext context;
-
       grpc::Status status = stub_->Delete(&context, request, &response);
 
       if (status.ok()) {
@@ -72,21 +66,21 @@ int main() {
   // simple non-exhaustive sanity check
 
   // key not found
-  std::cout << "Response : " << client.Get("key1") << '\n' << std::endl;
+  std::cout << "Response:- " << client.Get("key1") << '\n' << std::endl;
   // success
-  std::cout << "Response : " << client.Put("key1", "value1") << '\n'  << std::endl;
+  std::cout << "Response:- " << client.Put("key1", "value1") << '\n'  << std::endl;
   // success
-  std::cout << "Response : " << client.Get("key1") << '\n' << std::endl;
+  std::cout << "Response:- " << client.Get("key1") << '\n' << std::endl;
   // key already exists
-  std::cout << "Response : " << client.Put("key1", "value1") << '\n' << std::endl;
+  std::cout << "Response:- " << client.Put("key1", "value1") << '\n' << std::endl;
   // success
-  std::cout << "Response : " << client.Put("key2", "value2") << '\n' << std::endl;
+  std::cout << "Response:- " << client.Put("key2", "value2") << '\n' << std::endl;
   // key not found
-  std::cout << "Response : " << client.Delete("key3", "value3") << '\n' << std::endl;
+  std::cout << "Response:- " << client.Delete("key3", "value3") << '\n' << std::endl;
   // success
-  std::cout << "Response : " << client.Delete("key2", "value2") << '\n' << std::endl;
+  std::cout << "Response:- " << client.Delete("key2", "value2") << '\n' << std::endl;
   // key not found
-  std::cout << "Response : " << client.Get("key2") << '\n' << std::endl;
+  std::cout << "Response:- " << client.Get("key2") << '\n' << std::endl;
 
   return 0;
 }
