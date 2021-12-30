@@ -1,0 +1,28 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+message JoinRequest {
+  string server_addr = 1;
+}
+
+message JoinResponse {
+  uint32 server_id = 1;
+}
+
+message LeaveRequest {
+  string server_addr = 1;
+}
+
+message QueryResponse {
+  string server_addr = 1;
+}
+
+message QueryRequest {
+  string key = 1;
+}
+
+service ShardMasterService {
+  rpc Join (JoinRequest) returns (JoinResponse) {}
+  rpc Leave (LeaveRequest) returns (google.protobuf.Empty) {}
+  rpc Query (QueryRequest) returns (QueryResponse) {}
+}

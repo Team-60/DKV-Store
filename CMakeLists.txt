@@ -47,15 +47,23 @@ message(STATUS "Using gRPC ${gRPC_VERSION}")
 set(_GRPC_GRPCPP gRPC::grpc++)
 set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:gRPC::grpc_cpp_plugin>)
 
-# Proto filee
+# Proto file - volume_server
 get_filename_component(volume_server_proto "./protos/volume_server.proto" ABSOLUTE)
 get_filename_component(volume_server_proto_path "${volume_server_proto}" PATH)
+# Proto file - shard_master
+get_filename_component(shard_master_proto "./protos/shard_master.proto" ABSOLUTE)
+get_filename_component(shard_master_proto_path "${shard_master_proto}" PATH)
 
-# Generated sources
+# Generated sources - volume_server
 set(volume_server_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/volume_server.pb.cc")
 set(volume_server_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/volume_server.pb.h")
 set(volume_server_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/volume_server.grpc.pb.cc")
 set(volume_server_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/volume_server.grpc.pb.h")
+# Generated sources - shard_master
+set(shard_master_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/shard_master.pb.cc")
+set(shard_master_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/shard_master.pb.h")
+set(shard_master_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/shard_master.grpc.pb.cc")
+set(shard_master_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/shard_master.grpc.pb.h")
 
 add_custom_command(
   OUTPUT "${volume_server_proto_srcs}" "${volume_server_proto_hdrs}" "${volume_server_grpc_srcs}" "${volume_server_grpc_hdrs}"
@@ -66,6 +74,16 @@ add_custom_command(
     --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
     "${volume_server_proto}"
   DEPENDS "${volume_server_proto}")
+
+add_custom_command(
+  OUTPUT "${shard_master_proto_srcs}" "${shard_master_proto_hdrs}" "${shard_master_grpc_srcs}" "${shard_master_grpc_hdrs}"
+  COMMAND ${_PROTOBUF_PROTOC}
+  ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
+    --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
+    -I "${shard_master_proto_path}"
+    --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
+    "${shard_master_proto}"
+  DEPENDS "${shard_master_proto}")
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
@@ -80,7 +98,26 @@ target_link_libraries(volume_server_grpc_proto
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF})
 
-# add executable server.cc
+# shard_master_grpc_proto
+add_library(shard_master_grpc_proto
+  ${shard_master_grpc_srcs}
+  ${shard_master_grpc_hdrs}
+  ${shard_master_proto_srcs}
+  ${shard_master_proto_hdrs})
+target_link_libraries(shard_master_grpc_proto
+  ${_REFLECTION}
+  ${_GRPC_GRPCPP}
+  ${_PROTOBUF_LIBPROTOBUF})
+
+# add executable shard_master.cc
+add_executable(shard_master "server/shard_master/main.cc"
+  ${shard_master_proto_srcs}
+  ${shard_master_grpc_srcs})
+target_link_libraries(shard_master
+  ${_GRPC_GRPCPP}
+  ${_PROTOBUF_LIBPROTOBUF})
+
+# add executable volume_server.cc
 add_executable(volume_server "server/volume_server/main.cc"
   ${volume_server_proto_srcs}
   ${volume_server_grpc_srcs})
@@ -88,7 +125,7 @@ target_link_libraries(volume_server
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF})
 
-# add libraries and directores for leveldb
+# add libraries and directories for leveldb
 target_link_libraries(volume_server 
   ${LEVELDB_PREFIX}/build/libleveldb.a)
 target_link_libraries(volume_server
@@ -96,9 +133,12 @@ target_link_libraries(volume_server
 target_include_directories(volume_server PUBLIC 
   ${LEVELDB_PREFIX}/include/)
 
+# client executable
 add_executable(client "client/client.cc"
   ${volume_server_proto_srcs}
-  ${volume_server_grpc_srcs})
+  ${volume_server_grpc_srcs}
+  ${shard_master_proto_srcs}
+  ${shard_master_grpc_srcs})
 target_link_libraries(client
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF})
