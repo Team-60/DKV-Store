@@ -19,7 +19,7 @@ class Client {
 
       if (status.ok()) {
         return response.value();
-      }else {
+      } else {
         std::cout << status.error_code() << ": " << status.error_message() << std::endl;
         return "RPC Failed";
       }
@@ -38,7 +38,7 @@ class Client {
 
       if (status.ok()) {
         return "Success";
-      }else {
+      } else {
         std::cout << status.error_code() << ": " << status.error_message() << std::endl;
         return "RPC Failed";
       }
@@ -57,7 +57,7 @@ class Client {
 
       if (status.ok()) {
         return "Success";
-      }else {
+      } else {
         std::cout << status.error_code() << ": " << status.error_message() << std::endl;
         return "RPC Failed";
       }
@@ -73,25 +73,18 @@ int main() {
 
   // key not found
   std::cout << "Response : " << client.Get("key1") << '\n' << std::endl;
-
   // success
   std::cout << "Response : " << client.Put("key1", "value1") << '\n'  << std::endl;
-
   // success
   std::cout << "Response : " << client.Get("key1") << '\n' << std::endl;
-
   // key already exists
   std::cout << "Response : " << client.Put("key1", "value1") << '\n' << std::endl;
-
   // success
   std::cout << "Response : " << client.Put("key2", "value2") << '\n' << std::endl;
-
   // key not found
   std::cout << "Response : " << client.Delete("key3", "value3") << '\n' << std::endl;
-
   // success
   std::cout << "Response : " << client.Delete("key2", "value2") << '\n' << std::endl;
-
   // key not found
   std::cout << "Response : " << client.Get("key2") << '\n' << std::endl;
 
