@@ -27,47 +27,11 @@ class VolumeServer final : public VolumeServerService::Service {
       delete this->db;
     }
 
-    grpc::Status Get(grpc::ServerContext* context, const GetRequest* request, GetResponse* response) override {
-      std::cout << "Get : key=" << request->key() << std::endl;
+    grpc::Status Get(grpc::ServerContext* context, const GetRequest* request, GetResponse* response) override;
 
-      std::string value;
-      leveldb::Status s = this->db->Get(leveldb::ReadOptions(), request->key(), &value);
-      if (!s.ok()) {
-        response->set_key("");
-        response->set_value("");
-        return grpc::Status(grpc::StatusCode::NOT_FOUND, "key not found");
-      }
+    grpc::Status Put(grpc::ServerContext* context, const PutRequest* request, google::protobuf::Empty* response) override;
 
-      response->set_key(request->key());
-      response->set_value(value);
-      return grpc::Status::OK;
-    }
-
-    grpc::Status Put(grpc::ServerContext* context, const PutRequest* request, google::protobuf::Empty* response) override {
-      std::cout << "Put : key=" << request->key() << " Value=" << request->value() << std::endl;
-
-      std::string value;
-      leveldb::Status s = this->db->Get(leveldb::ReadOptions(), request->key(), &value);
-      if (s.ok()) {
-        return grpc::Status(grpc::StatusCode::ALREADY_EXISTS, "key already exists");
-      }
-
-      this->db->Put(leveldb::WriteOptions(), request->key(), request->value());
-      return grpc::Status::OK;
-    }
-
-    grpc::Status Delete(grpc::ServerContext* context, const DeleteRequest* request, google::protobuf::Empty* response) override {
-      std::cout << "Delete : key=" << request->key() << " Value=" << request->value() << std::endl;
-
-      std::string value;
-      leveldb::Status s = this->db->Get(leveldb::ReadOptions(), request->key(), &value);
-      if (!s.ok()) {
-        return grpc::Status(grpc::StatusCode::NOT_FOUND, "key not found");
-      }
-
-      this->db->Delete(leveldb::WriteOptions(), request->key());
-      return grpc::Status::OK;
-    }
+    grpc::Status Delete(grpc::ServerContext* context, const DeleteRequest* request, google::protobuf::Empty* response) override;
 
   private:
     int server_id;

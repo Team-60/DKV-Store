@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include <string>
 
-#include "volume_server.h"
+#include "volume_server.cc"
 
 void RunServer(std::string server_address, int server_id) {
   VolumeServer volume_server(server_id);
