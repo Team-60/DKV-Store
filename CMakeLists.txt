@@ -115,7 +115,11 @@ add_executable(shard_master "server/shard_master/main.cc"
   ${shard_master_grpc_srcs})
 target_link_libraries(shard_master
   ${_GRPC_GRPCPP}
-  ${_PROTOBUF_LIBPROTOBUF})
+  ${_PROTOBUF_LIBPROTOBUF}
+  ${LEVELDB_PREFIX}/build/libleveldb.a
+  ${CMAKE_THREAD_LIBS_INIT})
+target_include_directories(shard_master PUBLIC 
+  ${LEVELDB_PREFIX}/include/)
 
 # add executable volume_server.cc
 add_executable(volume_server "server/volume_server/main.cc"
@@ -123,12 +127,8 @@ add_executable(volume_server "server/volume_server/main.cc"
   ${volume_server_grpc_srcs})
 target_link_libraries(volume_server
   ${_GRPC_GRPCPP}
-  ${_PROTOBUF_LIBPROTOBUF})
-
-# add libraries and directories for leveldb
-target_link_libraries(volume_server 
-  ${LEVELDB_PREFIX}/build/libleveldb.a)
-target_link_libraries(volume_server
+  ${_PROTOBUF_LIBPROTOBUF}
+  ${LEVELDB_PREFIX}/build/libleveldb.a
   ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(volume_server PUBLIC 
   ${LEVELDB_PREFIX}/include/)
