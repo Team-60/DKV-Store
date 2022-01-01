@@ -1,6 +1,6 @@
 #include <string>
 
-#include "shard_master.h"
+#include "shard_master.cc"
 
 void RunServer(std::string server_address) {
   ShardMaster shard_master;
