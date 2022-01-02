@@ -3,6 +3,7 @@
 #include "shard_master.grpc.pb.h"
 
 #include "utils.h"
+#include "md5.cc"
 
 using google::protobuf::Empty;
 
@@ -103,6 +104,10 @@ int main(int argc, char* argv[]) {
 
   std::cout << "* Client querying shard master " << client.Query() << std::endl;
   client.printMappings();
+
+  // md5 check
+  std::cout << "> md5 of 'key-1': " << md5("key-1") << std::endl;
+
 
   // // simple non-exhaustive sanity check
 
