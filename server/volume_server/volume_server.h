@@ -2,13 +2,14 @@
 #include <string>
 #include <sstream>
 
-#include "leveldb/db.h"
 #include <grpcpp/grpcpp.h>
 #include "volume_server.grpc.pb.h"
 
-#define SHARD_MASTER_ADDR "127.0.0.1:8080"
+#include "leveldb/db.h"
 
 using google::protobuf::Empty;
+
+const std::string SHARD_MASTER_ADDR = "127.0.0.1:8080";
 
 class VolumeServer final : public VolumeServerService::Service {
 
@@ -25,6 +26,9 @@ class VolumeServer final : public VolumeServerService::Service {
 
       leveldb::Status status = leveldb::DB::Open(options, this->db_name, &this->db);
       assert (status.ok());
+
+      // ask shard-master to join
+      this->requestJoin();
     }
 
     ~VolumeServer() {
@@ -37,9 +41,12 @@ class VolumeServer final : public VolumeServerService::Service {
 
     grpc::Status Delete(grpc::ServerContext* context, const DeleteRequest* request, Empty* response) override;
 
+    void requestJoin() {}
+
   private:
     int server_id;
     std::string db_name;
     leveldb::DB* db;
+
 
 };

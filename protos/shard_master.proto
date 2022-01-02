@@ -20,7 +20,7 @@ message Shard {
 
 message ConfigEntry {
   repeated Shard shards = 1;
-  string server = 2;
+  string server_addr = 2;
 }
 
 message QueryResponse {

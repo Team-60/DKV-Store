@@ -1,10 +1,13 @@
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include <grpcpp/grpcpp.h>
 #include "shard_master.grpc.pb.h"
 
 #include "leveldb/db.h"
+
+#include "utils.h"
 
 using google::protobuf::Empty;
 
@@ -22,8 +25,18 @@ class ShardMaster final : public ShardMasterService::Service {
         exit(-1);
       }
 
-      this->num_vservers = 0;
-      this->vserver_addr.clear();
+      // config
+      this->sm_config.clear();
+
+      // dummy data to test Query()
+      SMConfigEntry smce;
+      SMShard s1, s2;
+      s1.lower = 0, s1.upper = 2;
+      s2.lower = 4, s2.upper = 6;
+      smce.vs_addr = "127.0.0.1:8081";
+      smce.shards.push_back(s1);
+      smce.shards.push_back(s2);
+      this->sm_config.push_back(smce);
     }
 
     ~ShardMaster () {
@@ -40,8 +53,8 @@ class ShardMaster final : public ShardMasterService::Service {
 
   private:
     const std::string db_name = "db-shard-master";
-    int num_vservers;
-    std::vector<std::string> vserver_addr;
     leveldb::DB* db;
+
+    std::vector<SMConfigEntry> sm_config;
 
 };

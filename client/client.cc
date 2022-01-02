@@ -1,15 +1,20 @@
 #include <grpcpp/grpcpp.h>
-
 #include "volume_server.grpc.pb.h"
 #include "shard_master.grpc.pb.h"
 
+#include "utils.h"
+
 using google::protobuf::Empty;
+
+const std::string SHARD_MASTER_ADDR = "127.0.0.1:8080";
 
 class Client {
   std::unique_ptr<VolumeServerService::Stub> vs_stub_;
   std::unique_ptr<ShardMasterService::Stub> sm_stub_;
   
   public: 
+    QueryResponse mappings;
+
     Client(std::shared_ptr<grpc::Channel> channel) : vs_stub_(VolumeServerService::NewStub(channel)), sm_stub_(ShardMasterService::NewStub(channel)) {}
 
     std::string Get(const std::string& key) { // volume-server
@@ -62,29 +67,42 @@ class Client {
       }
     }
 
-    void Query() { // shard-master
+    std::string Query() { // shard-master
       Empty request;
 
-      QueryResponse response;
       grpc::ClientContext context;
-      grpc::Status status = sm_stub_->Query(&context, request, &response);
+      grpc::Status status = sm_stub_->Query(&context, request, &this->mappings);
 
       if (status.ok()) {
-        std::cout << "Success";
+        return "Success";
       } else {
         std::cout << status.error_code() << ": " << status.error_message() << std::endl;
-        std::cout << "RPC Failed";
+        return "RPC Failed";
       }
+    }
+
+    void printMappings() {
+      std::cout << "> Client mappings\n";
+      auto config = this->mappings.config();
+      for (int entry = 0; entry < config.size(); ++entry) {
+        std::cout << config[entry].server_addr() << ": ";
+        auto shards = config[entry].shards();
+        for (int shard_idx = 0; shard_idx < shards.size(); ++ shard_idx) {
+          std::cout << "{" << shards[shard_idx].lower() << ", " << shards[shard_idx].upper() << "} ";
+        }
+        std::cout << '\n';
+      }
+      std::cout << std::endl;
     }
 
 };
 
 int main(int argc, char* argv[]) {
-  std::string shard_master_addr = (argc > 1) ? argv[1]: "127.0.0.1:8080";
+  std::string shard_master_addr = (argc > 1) ? argv[1]: SHARD_MASTER_ADDR;
   Client client(grpc::CreateChannel(shard_master_addr, grpc::InsecureChannelCredentials()));
 
-  std::cout << "* Client querying shard master: " << std::endl;
-  client.Query();
+  std::cout << "* Client querying shard master " << client.Query() << std::endl;
+  client.printMappings();
 
   // // simple non-exhaustive sanity check
 
@@ -105,6 +123,7 @@ int main(int argc, char* argv[]) {
   // // key not found
   // std::cout << "Response:- " << client.Get("key2") << '\n' << std::endl;
 
+  std::cout << std::endl;
   return 0;
 }
 
