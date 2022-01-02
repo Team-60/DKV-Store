@@ -6,6 +6,10 @@
 #include <grpcpp/grpcpp.h>
 #include "volume_server.grpc.pb.h"
 
+#define SHARD_MASTER_ADDR "127.0.0.1:8080"
+
+using google::protobuf::Empty;
+
 class VolumeServer final : public VolumeServerService::Service {
 
   public:
@@ -29,9 +33,9 @@ class VolumeServer final : public VolumeServerService::Service {
 
     grpc::Status Get(grpc::ServerContext* context, const GetRequest* request, GetResponse* response) override;
 
-    grpc::Status Put(grpc::ServerContext* context, const PutRequest* request, google::protobuf::Empty* response) override;
+    grpc::Status Put(grpc::ServerContext* context, const PutRequest* request, Empty* response) override;
 
-    grpc::Status Delete(grpc::ServerContext* context, const DeleteRequest* request, google::protobuf::Empty* response) override;
+    grpc::Status Delete(grpc::ServerContext* context, const DeleteRequest* request, Empty* response) override;
 
   private:
     int server_id;

@@ -3,7 +3,7 @@
 #include "shard_master.cc"
 
 void RunServer(std::string server_address) {
-  ShardMaster shard_master({"127.0.0.1:8080", "127:0.0.2:8080"});
+  ShardMaster shard_master;
 
   ::grpc::ServerBuilder builder;
   builder.AddListeningPort(server_address, ::grpc::InsecureServerCredentials());

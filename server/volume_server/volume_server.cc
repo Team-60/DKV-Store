@@ -1,8 +1,7 @@
 #include "volume_server.h"
 
-
 grpc::Status VolumeServer::Get(grpc::ServerContext* context, const GetRequest* request, GetResponse* response) {
-  std::cout << "Get : key=" << request->key() << std::endl;
+  std::cout << "VS" << this->server_id << ") Get: key=" << request->key() << std::endl;
 
   std::string value;
   leveldb::Status s = this->db->Get(leveldb::ReadOptions(), request->key(), &value);
@@ -17,9 +16,8 @@ grpc::Status VolumeServer::Get(grpc::ServerContext* context, const GetRequest* r
   return grpc::Status::OK;
 }
 
-
 grpc::Status VolumeServer::Put(grpc::ServerContext* context, const PutRequest* request, google::protobuf::Empty* response) {
-  std::cout << "Put : key=" << request->key() << " Value=" << request->value() << std::endl;
+  std::cout << "VS" << this->server_id << ") Put: key=" << request->key() << " value=" << request->value() << std::endl;
 
   std::string value;
   leveldb::Status s = this->db->Get(leveldb::ReadOptions(), request->key(), &value);
@@ -32,7 +30,7 @@ grpc::Status VolumeServer::Put(grpc::ServerContext* context, const PutRequest* r
 }
 
 grpc::Status VolumeServer::Delete(grpc::ServerContext* context, const DeleteRequest* request, google::protobuf::Empty* response) {
-  std::cout << "Delete : key=" << request->key() << " Value=" << request->value() << std::endl;
+  std::cout << "VS" << this->server_id << ") Delete: key=" << request->key() << " value=" << request->value() << std::endl;
 
   std::string value;
   leveldb::Status s = this->db->Get(leveldb::ReadOptions(), request->key(), &value);
