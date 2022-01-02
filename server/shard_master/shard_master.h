@@ -26,6 +26,7 @@ class ShardMaster final : public ShardMasterService::Service {
       }
 
       // config
+      this->config_num = 1; // INITIAL CONFIGURATION IS ALWAYS 1 (DEFAULT VALUE 0)
       this->sm_config.clear();
 
       // dummy data to test Query()
@@ -45,6 +46,8 @@ class ShardMaster final : public ShardMasterService::Service {
 
     grpc::Status Query(grpc::ServerContext* context, const Empty* request, QueryResponse* response) override;
 
+    grpc::Status QueryConfigNum(grpc::ServerContext* context, const Empty* request, QueryConfigNumResponse* response) override;
+
     grpc::Status Move(grpc::ServerContext* context, const MoveRequest* request, Empty* response) override;
 
     grpc::Status Join(grpc::ServerContext* context, const JoinRequest* request, JoinResponse* response) override;
@@ -54,7 +57,8 @@ class ShardMaster final : public ShardMasterService::Service {
   private:
     const std::string db_name = "db-shard-master";
     leveldb::DB* db;
-
+    // config
     std::vector<SMConfigEntry> sm_config;
+    uint config_num;
 
 };

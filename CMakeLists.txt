@@ -128,7 +128,9 @@ target_include_directories(shard_master PUBLIC ${utils_srcs})
 # add executable volume_server.cc
 add_executable(volume_server "server/volume_server/main.cc"
   ${volume_server_proto_srcs}
-  ${volume_server_grpc_srcs})
+  ${volume_server_grpc_srcs}
+  ${shard_master_proto_srcs}
+  ${shard_master_grpc_srcs})
 target_link_libraries(volume_server
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF}

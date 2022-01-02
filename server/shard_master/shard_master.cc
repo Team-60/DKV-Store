@@ -1,8 +1,8 @@
 #include "shard_master.h"
 
 grpc::Status ShardMaster::Query(grpc::ServerContext* context, const Empty* request, QueryResponse* response) {
-  response->clear_config();
   std::cout << "* Shardmaster: Query called" << std::endl;
+  response->clear_config();
   
   // prepare response
   for (const SMConfigEntry &sm_config_entry: this->sm_config) {
@@ -19,16 +19,24 @@ grpc::Status ShardMaster::Query(grpc::ServerContext* context, const Empty* reque
   return grpc::Status::OK;
 }
 
+grpc::Status ShardMaster::QueryConfigNum(grpc::ServerContext* context, const Empty* request, QueryConfigNumResponse* response) {
+  std::cout << "* Shardmaster: Query config called - " << this->config_num << std::endl; // obviously comment afterwards
+  
+  response->set_config_num(this->config_num);
+  return grpc::Status::OK;
+};
+
 grpc::Status ShardMaster::Move(grpc::ServerContext* context, const MoveRequest* request, Empty* response) {
   return grpc::Status::OK;
 }
 
-grpc::Status ShardMaster::Join(grpc::ServerContext* context, const JoinRequest* request, JoinResponse* response) {
-
+grpc::Status ShardMaster::Join(grpc::ServerContext* context, const JoinRequest* request, JoinResponse* response) { 
   return grpc::Status::OK;
 }
 
 grpc::Status ShardMaster::Leave(grpc::ServerContext* context, const LeaveRequest* request, Empty* response) {
   return grpc::Status::OK;
 }
+
+
   

@@ -27,6 +27,10 @@ message QueryResponse {
   repeated ConfigEntry config = 1;
 }
 
+message QueryConfigNumResponse {
+  uint32 config_num = 1;
+}
+
 message MoveRequest {
   string server = 1;
   Shard shard = 2;
@@ -37,4 +41,5 @@ service ShardMasterService {
   rpc Leave (LeaveRequest) returns (google.protobuf.Empty) {}
   rpc Move (MoveRequest) returns (google.protobuf.Empty) {}
   rpc Query (google.protobuf.Empty) returns (QueryResponse) {}
+  rpc QueryConfigNum (google.protobuf.Empty) returns (QueryConfigNumResponse) {}
 }
