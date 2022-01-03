@@ -22,10 +22,10 @@ const std::string SHARD_MASTER_ADDR = "127.0.0.1:8080";
 class VolumeServer final : public VolumeServerService::Service {
 
   public:
-    VolumeServer(uint server_id_, std::shared_ptr<grpc::Channel> channel) : server_id(server_id_), sm_stub_(ShardMasterService::NewStub(channel)) {
+    VolumeServer(uint db_idx, std::string vs_addr, std::shared_ptr<grpc::Channel> channel) : db_idx(db_idx), vs_addr(vs_addr), sm_stub_(ShardMasterService::NewStub(channel)) {
       // db name
       std::ostringstream buffer;
-      buffer << "db-volume-server-" << this->server_id;
+      buffer << "db-volume-server-" << this->db_idx;
       this->db_name = buffer.str();
       
       // create db
@@ -57,12 +57,7 @@ class VolumeServer final : public VolumeServerService::Service {
 
     grpc::Status Delete(grpc::ServerContext* context, const DeleteRequest* request, Empty* response) override;
 
-    void requestJoin() {
-      // initialises config number, config
-      this->config.clear();
-      this->config_num = 0;
-
-    }
+    void requestJoin();
 
     void fetchSMConfig() {
       Empty request;
@@ -81,7 +76,7 @@ class VolumeServer final : public VolumeServerService::Service {
         assert (status.ok());
         
         mtx.lock(); // lock
-        std::cout << "VS" << this->server_id << ") Updating config! " << this->config_num << "->" << response.config_num() << ".\n";
+        std::cout << "VS" << this->db_idx << ") Updating config! " << this->config_num << "->" << response.config_num() << ".\n";
         // update config number
         this->config_num = response.config_num();
         // update config
@@ -104,7 +99,8 @@ class VolumeServer final : public VolumeServerService::Service {
     }
 
   private:
-    uint server_id;
+    uint db_idx;
+    std::string vs_addr;
     std::string db_name;
     leveldb::DB* db;
     // data members for volume server config (fetched from SM)
@@ -114,7 +110,7 @@ class VolumeServer final : public VolumeServerService::Service {
     std::vector<SMConfigEntry> config;
 
     void printCurrentConfig() {
-      std::cout << "VS" << this->server_id << ") Current config\n";
+      std::cout << "VS" << this->db_idx << ") Current config\n";
       for (int entry = 0; entry < (int) this->config.size(); ++entry) {
         std::cout << this->config[entry].vs_addr << ": ";
         auto &shards = this->config[entry].shards;

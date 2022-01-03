@@ -1,7 +1,7 @@
 #include "volume_server.h"
 
 grpc::Status VolumeServer::Get(grpc::ServerContext* context, const GetRequest* request, GetResponse* response) {
-  std::cout << "VS" << this->server_id << ") Get: key=" << request->key() << std::endl;
+  std::cout << "VS" << this->db_idx << ") Get: key=" << request->key() << std::endl;
 
   std::string value;
   leveldb::Status s = this->db->Get(leveldb::ReadOptions(), request->key(), &value);
@@ -17,7 +17,7 @@ grpc::Status VolumeServer::Get(grpc::ServerContext* context, const GetRequest* r
 }
 
 grpc::Status VolumeServer::Put(grpc::ServerContext* context, const PutRequest* request, google::protobuf::Empty* response) {
-  std::cout << "VS" << this->server_id << ") Put: key=" << request->key() << " value=" << request->value() << std::endl;
+  std::cout << "VS" << this->db_idx << ") Put: key=" << request->key() << " value=" << request->value() << std::endl;
 
   std::string value;
   leveldb::Status s = this->db->Get(leveldb::ReadOptions(), request->key(), &value);
@@ -30,7 +30,7 @@ grpc::Status VolumeServer::Put(grpc::ServerContext* context, const PutRequest* r
 }
 
 grpc::Status VolumeServer::Delete(grpc::ServerContext* context, const DeleteRequest* request, google::protobuf::Empty* response) {
-  std::cout << "VS" << this->server_id << ") Delete: key=" << request->key() << " value=" << request->value() << std::endl;
+  std::cout << "VS" << this->db_idx << ") Delete: key=" << request->key() << " value=" << request->value() << std::endl;
 
   std::string value;
   leveldb::Status s = this->db->Get(leveldb::ReadOptions(), request->key(), &value);
@@ -41,3 +41,20 @@ grpc::Status VolumeServer::Delete(grpc::ServerContext* context, const DeleteRequ
   this->db->Delete(leveldb::WriteOptions(), request->key());
   return grpc::Status::OK;
 }
+
+void VolumeServer::requestJoin() {
+    // initialises config number, config
+    this->config.clear();
+    this->config_num = 0;
+
+    JoinResponse response;
+    grpc::ClientContext context;
+    JoinRequest request;
+    request.set_server_addr(vs_addr);
+
+    grpc::Status status = sm_stub_->Join(&context, request, &response);
+    assert (status.ok());
+
+    db_idx = response.server_id();
+}
+

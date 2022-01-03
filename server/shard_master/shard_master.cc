@@ -28,6 +28,31 @@ grpc::Status ShardMaster::QueryConfigNum(grpc::ServerContext* context, const Emp
 
 grpc::Status ShardMaster::Move(grpc::ServerContext* context, const MoveRequest* request, Empty* response) {
 
+  auto move_vs_addr = request->server();
+  auto shard = request->shard();
+  SMShard move_shard;
+  move_shard.lower = shard.lower(), move_shard.upper = shard.upper();
+
+  mtx.lock();
+  for (SMConfigEntry& config : sm_config) {
+    std::vector<SMShard> new_shards;
+    for (SMShard& shard : config.shards) {
+      // shard - move_shard
+      std::pair<SMShard, SMShard> result = shard.subtract(shard, move_shard);
+      if (result.first.lower != -1) {
+        new_shards.push_back(result.first);
+      }
+      if (result.second.lower != -1) {
+        new_shards.push_back(result.second);
+      }
+    }
+    if (config.vs_addr == move_vs_addr) {
+      new_shards.push_back(move_shard);
+    }
+    config.shards = new_shards;
+  }
+  mtx.unlock();
+  
   return grpc::Status::OK;
 }
 
