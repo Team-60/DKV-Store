@@ -26,18 +26,8 @@ class ShardMaster final : public ShardMasterService::Service {
       }
 
       // config
-      this->config_num = 1; // INITIAL CONFIGURATION IS ALWAYS 1 (DEFAULT VALUE 0)
+      this->config_num = 0; // INITIAL CONFIGURATION IS 0
       this->sm_config.clear();
-
-      // dummy data to test Query()
-      SMConfigEntry smce;
-      SMShard s1, s2;
-      s1.lower = 0, s1.upper = 2;
-      s2.lower = 4, s2.upper = 6;
-      smce.vs_addr = "127.0.0.1:8081";
-      smce.shards.push_back(s1);
-      smce.shards.push_back(s2);
-      this->sm_config.push_back(smce);
     }
 
     ~ShardMaster () {

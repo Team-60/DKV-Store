@@ -19,6 +19,8 @@ pushd ../cmake/build
 echo "> running shard_master at $BASE_ADDR:8080"
 ./shard_master & shard_master_pid=$!
 
+sleep 2
+
 # run initial volume servers
 for ((i = 1; i <= $1; i ++))
 do 
