@@ -15,7 +15,7 @@ mkdir -p cmake/build
 
 pushd cmake/build
 
-cmake -DLEVELDB_PREFIX=$HOME/leveldb ../..
+cmake -DCMAKE_PREFIX_PATH=$HOME/src/builds/gRPC -DLEVELDB_PREFIX=$HOME/src/builds/leveldb ../..
 
 make
 
