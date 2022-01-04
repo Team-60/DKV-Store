@@ -46,7 +46,7 @@ class ShardMaster final : public ShardMasterService::Service {
   // config
   std::vector<SMConfigEntry> sm_config;
   uint config_num;
-  const int NUM_CHUNKS = 1000;
+  const uint NUM_CHUNKS = 1000;
   std::mutex mtx;
 
   void redistributeChunks();

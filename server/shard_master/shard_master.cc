@@ -97,12 +97,12 @@ void ShardMaster::redistributeChunks() {
   for (int i = 0; i < num_vs; ++i) {
     this->sm_config[i].shards.clear();
     SMShard shard;
-    shard.lower = (NUM_CHUNKS / num_vs) * i;
+    shard.lower = (this->NUM_CHUNKS / num_vs) * i;
     if (i == num_vs - 1) {
       // in case NUM_CHUNKS % num_vs != 0 there can be unassigned chunks
-      shard.upper = NUM_CHUNKS;
+      shard.upper = this->NUM_CHUNKS;
     } else {
-      shard.upper = (NUM_CHUNKS / num_vs) * (i + 1) - 1;
+      shard.upper = (this->NUM_CHUNKS / num_vs) * (i + 1) - 1;
     }
     this->sm_config[i].shards.push_back(shard);
   }

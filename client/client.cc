@@ -23,9 +23,6 @@ class Client {
   std::unique_ptr<ShardMasterService::Stub> sm_stub_;
 
  public:
-  QueryResponse mappings;
-  uint config_num;
-
   Client(std::shared_ptr<grpc::Channel> channel) : sm_stub_(ShardMasterService::NewStub(channel)), config_num(0) {}
 
   // volume-server
@@ -123,16 +120,22 @@ class Client {
         return query_status::RPC_FAIL_RESET;
       }
       std::cout << "* Client: Updating config! " << this->config_num << "->" << response.config_num() << std::endl;
-      this->printMappings();
       this->config_num = response.config_num();
+      this->printMappings();
     }
 
     return query_status::OK;
   }
 
  private:
+  QueryResponse mappings;
+  uint config_num;
+  const uint num_chunks = 1000;
+
   void printMappings() {
     std::cout << "> Client mappings\n";
+    std::cout << "- config_num " << this->config_num << '\n';
+    std::cout << "- num_chunks " << this->num_chunks << '\n';
     auto config = this->mappings.config();
     for (int entry = 0; entry < config.size(); ++entry) {
       std::cout << config[entry].server_addr() << ": ";
@@ -152,7 +155,7 @@ class Client {
     uint hash_int = get_hash_uint(hash);
     std::cout << "> hash_int: " << hash << " " << hash_int << std::endl;
     auto config = this->mappings.config();
-    uint shard_mod = hash_int % config.size();
+    uint shard_mod = hash_int % this->num_chunks;
     std::cout << "> shard_mod: " << shard_mod << std::endl;
     // find corresponding volume server
     for (int entry = 0; entry < config.size(); ++entry) {
