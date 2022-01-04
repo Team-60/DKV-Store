@@ -40,7 +40,7 @@ class ShardMaster final : public ShardMasterService::Service {
 
     grpc::Status Move(grpc::ServerContext* context, const MoveRequest* request, Empty* response) override;
 
-    grpc::Status Join(grpc::ServerContext* context, const JoinRequest* request, JoinResponse* response) override;
+    grpc::Status Join(grpc::ServerContext* context, const JoinRequest* request, Empty* response) override;
 
     grpc::Status Leave(grpc::ServerContext* context, const LeaveRequest* request, Empty* response) override;
 
@@ -53,7 +53,6 @@ class ShardMaster final : public ShardMasterService::Service {
     const int NUM_CHUNKS = 1000;
     std::mutex mtx;
 
-    int find_unassigned_vs_id();
     void redistributeChunks();
 
 };

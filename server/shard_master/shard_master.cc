@@ -1,7 +1,7 @@
 #include "shard_master.h"
 
 grpc::Status ShardMaster::Query(grpc::ServerContext* context, const Empty* request, QueryResponse* response) {
-  std::cout << "* Shardmaster: Query called" << std::endl;
+  std::cout << "* Shardmaster: Query called - " << this->config_num << std::endl;
   response->clear_config();
   
   // prepare response
@@ -27,16 +27,17 @@ grpc::Status ShardMaster::QueryConfigNum(grpc::ServerContext* context, const Emp
 };
 
 grpc::Status ShardMaster::Move(grpc::ServerContext* context, const MoveRequest* request, Empty* response) {
+  std::cout << "* Shardmaster: Move called - " << this->config_num << std::endl;
 
   auto move_vs_addr = request->server();
   auto shard = request->shard();
   SMShard move_shard;
   move_shard.lower = shard.lower(), move_shard.upper = shard.upper();
 
-  mtx.lock();
-  for (SMConfigEntry& config : sm_config) {
+  this->mtx.lock();
+  for (SMConfigEntry& config: this->sm_config) {
     std::vector<SMShard> new_shards;
-    for (SMShard& shard : config.shards) {
+    for (SMShard& shard: config.shards) {
       // shard - move_shard
       std::pair<SMShard, SMShard> result = shard.subtract(shard, move_shard);
       if (result.first.lower != -1) {
@@ -51,81 +52,61 @@ grpc::Status ShardMaster::Move(grpc::ServerContext* context, const MoveRequest* 
     }
     config.shards = new_shards;
   }
-  mtx.unlock();
+  this->config_num++;
+  this->mtx.unlock();
   
   return grpc::Status::OK;
 }
 
-grpc::Status ShardMaster::Join(grpc::ServerContext* context, const JoinRequest* request, JoinResponse* response) { 
-
-  int new_id = find_unassigned_vs_id();
+grpc::Status ShardMaster::Join(grpc::ServerContext* context, const JoinRequest* request, Empty* response) { 
+  std::cout << "* Shardmaster: Join called - " << this->config_num << "; vs_addr: " << request->server_addr() << std::endl;
 
   SMConfigEntry new_configEntry;
   new_configEntry.vs_addr = request->server_addr();
-  new_configEntry.server_id = new_id;
 
-  mtx.lock();
-  sm_config.push_back(new_configEntry);
-  mtx.unlock();
+  this->mtx.lock();
+  this->sm_config.push_back(new_configEntry);
+  this->mtx.unlock();
 
-  redistributeChunks();
+  this->redistributeChunks();
   
   return grpc::Status::OK;
 }
 
 grpc::Status ShardMaster::Leave(grpc::ServerContext* context, const LeaveRequest* request, Empty* response) {
+  std::cout << "* Shardmaster: Leave called - " << this->config_num << "; vs_addr: " << request->server_addr() <<std::endl;
 
-  mtx.lock();
-  for (int i = 0; i < sm_config.size(); ++i) {
-    if (sm_config[i].vs_addr == request->server_addr()) {
-      sm_config.erase(sm_config.begin() + i);
+  this->mtx.lock();
+  for (int i = 0; i < this->sm_config.size(); ++i) {
+    if (this->sm_config[i].vs_addr == request->server_addr()) {
+      this->sm_config.erase(this->sm_config.begin() + i);
       break;
     }
   }
-  mtx.unlock();
+  this->mtx.unlock();
 
-  redistributeChunks();
+  this->redistributeChunks();
 
   return grpc::Status::OK;
 }
 
 void ShardMaster::redistributeChunks() {
-  mtx.lock();
-  config_num++;
-  int num_vs = sm_config.size();
-
+  this->mtx.lock();
+  this->config_num++;
+  int num_vs = this->sm_config.size();
   for (int i = 0; i < num_vs; ++i) {
-    sm_config[i].shards.clear();
+    this->sm_config[i].shards.clear();
     SMShard shard;
-    shard.lower = (NUM_CHUNKS/num_vs) * i;
-
+    shard.lower = (NUM_CHUNKS / num_vs) * i;
     if (i == num_vs - 1) {
       // in case NUM_CHUNKS % num_vs != 0 there can be unassigned chunks
-      shard.upper = (NUM_CHUNKS);
-    }else {
-      shard.upper = (NUM_CHUNKS/num_vs) * (i + 1) - 1; 
+      shard.upper = NUM_CHUNKS;
+    } else {
+      shard.upper = (NUM_CHUNKS / num_vs) * (i + 1) - 1; 
     }
-    sm_config[i].shards.push_back(shard);
+    this->sm_config[i].shards.push_back(shard);
   }
-  mtx.unlock();
-}
-
-int ShardMaster::find_unassigned_vs_id() {
-  mtx.lock();
-  // min add is 1;
-  int mex = 1;
-  std::vector<int> ids;
-  for (SMConfigEntry& configEntry : sm_config) {
-    ids.push_back(configEntry.server_id);
-  }
-  sort(ids.begin(), ids.end());
-  for (int& id : ids) {
-    if (id != mex) 
-      break;
-    mex++;
-  }
-  mtx.unlock();
-  return mex;
+  this->mtx.unlock();
 }
 
 

@@ -28,6 +28,7 @@ do
     echo "> running volume_server $i at $BASE_ADDR:$PORT"
     ./volume_server $BASE_ADDR:$PORT $i & pid=$!
     volume_server_pids+=" $pid"
+    sleep 0.5
 done
 
 trap "kill $shard_master_pid $volume_server_pids" SIGINT

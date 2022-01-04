@@ -47,14 +47,52 @@ void VolumeServer::requestJoin() {
     this->config.clear();
     this->config_num = 0;
 
-    JoinResponse response;
-    grpc::ClientContext context;
     JoinRequest request;
+    grpc::ClientContext context;
+    Empty response;
     request.set_server_addr(vs_addr);
 
-    grpc::Status status = sm_stub_->Join(&context, request, &response);
+    grpc::Status status = this->sm_stub_->Join(&context, request, &response);
     assert (status.ok());
-
-    db_idx = response.server_id();
 }
 
+void VolumeServer::fetchSMConfig() {
+  // periodically fetches config from shard-master & incorporates changes (if any)
+  Empty request;
+
+  QueryConfigNumResponse response;
+  grpc::ClientContext context;
+  grpc::Status status = sm_stub_->QueryConfigNum(&context, request, &response);
+  assert (status.ok());
+
+  if (this->config_num < response.config_num()) {
+    // fetch config & update
+    Empty request_;
+    QueryResponse new_config_response;
+    grpc::ClientContext context_;
+    grpc::Status status_ = this->sm_stub_->Query(&context_, request_, &new_config_response);
+    assert (status.ok());
+    
+    this->mtx.lock(); // lock
+    std::cout << "VS" << this->db_idx << ") Updating config! " << this->config_num << "->" << response.config_num() << ".\n";
+    // update config number
+    this->config_num = response.config_num();
+    // update config
+    this->config.clear();
+    auto new_config = new_config_response.config();
+    for (int entry = 0; entry < new_config.size(); ++entry) {
+      SMConfigEntry smce;
+      smce.vs_addr = new_config[entry].server_addr();
+      auto shards = new_config[entry].shards();
+      for (int shard_idx = 0; shard_idx < shards.size(); ++shard_idx) {
+        SMShard nshard;
+        nshard.lower = shards[shard_idx].lower(), nshard.upper = shards[shard_idx].upper();
+        smce.shards.push_back(nshard);
+      }
+      this->config.push_back(smce);
+    }
+    this->mtx.unlock(); // unlock
+    
+    this->printCurrentConfig();
+  }
+}

@@ -5,10 +5,6 @@ message JoinRequest {
   string server_addr = 1;
 }
 
-message JoinResponse {
-  uint32 server_id = 1;
-}
-
 message LeaveRequest {
   string server_addr = 1;
 }
@@ -37,7 +33,7 @@ message MoveRequest {
 }
 
 service ShardMasterService {
-  rpc Join (JoinRequest) returns (JoinResponse) {}
+  rpc Join (JoinRequest) returns (google.protobuf.Empty) {}
   rpc Leave (LeaveRequest) returns (google.protobuf.Empty) {}
   rpc Move (MoveRequest) returns (google.protobuf.Empty) {}
   rpc Query (google.protobuf.Empty) returns (QueryResponse) {}

@@ -43,7 +43,6 @@ struct SMShard {
 };
 
 struct SMConfigEntry {
-  uint server_id;
   std::vector<SMShard> shards;
   std::string vs_addr;
 };
