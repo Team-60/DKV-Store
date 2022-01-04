@@ -3,6 +3,10 @@
 Args:
 1) Number of volume_servers to spawn
 2) flag "D" for complete rebuild / "F" for formatting (Passed directly to ../build.sh)
+
+Address for spawn:
+> shard-master at BASE_ADDR
+> ith volume-server at BASE_ADDR+i (1-indexing)
 '
 
 ## constants
