@@ -1,9 +1,7 @@
 #include "shard_master.h"
 
-grpc::Status ShardMaster::Query(grpc::ServerContext* context,
-                                const Empty* request, QueryResponse* response) {
-  std::cout << "* Shardmaster: Query called - " << this->config_num
-            << std::endl;
+grpc::Status ShardMaster::Query(grpc::ServerContext* context, const Empty* request, QueryResponse* response) {
+  std::cout << "* Shardmaster: Query called - " << this->config_num << std::endl;
   response->clear_config();
 
   // prepare response
@@ -21,18 +19,14 @@ grpc::Status ShardMaster::Query(grpc::ServerContext* context,
   return grpc::Status::OK;
 }
 
-grpc::Status ShardMaster::QueryConfigNum(grpc::ServerContext* context,
-                                         const Empty* request,
-                                         QueryConfigNumResponse* response) {
-  std::cout << "* Shardmaster: Query config called - " << this->config_num
-            << std::endl;  // obviously comment afterwards
+grpc::Status ShardMaster::QueryConfigNum(grpc::ServerContext* context, const Empty* request, QueryConfigNumResponse* response) {
+  std::cout << "* Shardmaster: Query config called - " << this->config_num << std::endl;  // obviously comment afterwards
 
   response->set_config_num(this->config_num);
   return grpc::Status::OK;
 };
 
-grpc::Status ShardMaster::Move(grpc::ServerContext* context,
-                               const MoveRequest* request, Empty* response) {
+grpc::Status ShardMaster::Move(grpc::ServerContext* context, const MoveRequest* request, Empty* response) {
   std::cout << "* Shardmaster: Move called - " << this->config_num << std::endl;
 
   auto move_vs_addr = request->server();
@@ -64,10 +58,8 @@ grpc::Status ShardMaster::Move(grpc::ServerContext* context,
   return grpc::Status::OK;
 }
 
-grpc::Status ShardMaster::Join(grpc::ServerContext* context,
-                               const JoinRequest* request, Empty* response) {
-  std::cout << "* Shardmaster: Join called - " << this->config_num
-            << "; vs_addr: " << request->server_addr() << std::endl;
+grpc::Status ShardMaster::Join(grpc::ServerContext* context, const JoinRequest* request, Empty* response) {
+  std::cout << "* Shardmaster: Join called - " << this->config_num << "; vs_addr: " << request->server_addr() << std::endl;
 
   SMConfigEntry new_configEntry;
   new_configEntry.vs_addr = request->server_addr();
@@ -81,10 +73,8 @@ grpc::Status ShardMaster::Join(grpc::ServerContext* context,
   return grpc::Status::OK;
 }
 
-grpc::Status ShardMaster::Leave(grpc::ServerContext* context,
-                                const LeaveRequest* request, Empty* response) {
-  std::cout << "* Shardmaster: Leave called - " << this->config_num
-            << "; vs_addr: " << request->server_addr() << std::endl;
+grpc::Status ShardMaster::Leave(grpc::ServerContext* context, const LeaveRequest* request, Empty* response) {
+  std::cout << "* Shardmaster: Leave called - " << this->config_num << "; vs_addr: " << request->server_addr() << std::endl;
 
   this->mtx.lock();
   for (int i = 0; i < this->sm_config.size(); ++i) {

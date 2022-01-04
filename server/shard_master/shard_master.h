@@ -16,8 +16,7 @@ class ShardMaster final : public ShardMasterService::Service {
     leveldb::Options options;
     options.create_if_missing = true;
 
-    leveldb::Status openDBStatus =
-        leveldb::DB::Open(options, this->db_name, &this->db);
+    leveldb::Status openDBStatus = leveldb::DB::Open(options, this->db_name, &this->db);
 
     if (!openDBStatus.ok()) {
       std::cerr << "Error: Can't open leveldb" << '\n';
@@ -31,21 +30,15 @@ class ShardMaster final : public ShardMasterService::Service {
 
   ~ShardMaster() { delete this->db; }
 
-  grpc::Status Query(grpc::ServerContext* context, const Empty* request,
-                     QueryResponse* response) override;
+  grpc::Status Query(grpc::ServerContext* context, const Empty* request, QueryResponse* response) override;
 
-  grpc::Status QueryConfigNum(grpc::ServerContext* context,
-                              const Empty* request,
-                              QueryConfigNumResponse* response) override;
+  grpc::Status QueryConfigNum(grpc::ServerContext* context, const Empty* request, QueryConfigNumResponse* response) override;
 
-  grpc::Status Move(grpc::ServerContext* context, const MoveRequest* request,
-                    Empty* response) override;
+  grpc::Status Move(grpc::ServerContext* context, const MoveRequest* request, Empty* response) override;
 
-  grpc::Status Join(grpc::ServerContext* context, const JoinRequest* request,
-                    Empty* response) override;
+  grpc::Status Join(grpc::ServerContext* context, const JoinRequest* request, Empty* response) override;
 
-  grpc::Status Leave(grpc::ServerContext* context, const LeaveRequest* request,
-                     Empty* response) override;
+  grpc::Status Leave(grpc::ServerContext* context, const LeaveRequest* request, Empty* response) override;
 
  private:
   const std::string db_name = "db-shard-master";

@@ -20,11 +20,7 @@ const std::string SHARD_MASTER_ADDR = "127.0.0.1:8080";
 
 class VolumeServer final : public VolumeServerService::Service {
  public:
-  VolumeServer(uint db_idx, std::string vs_addr,
-               std::shared_ptr<grpc::Channel> channel)
-      : db_idx(db_idx),
-        vs_addr(vs_addr),
-        sm_stub_(ShardMasterService::NewStub(channel)) {
+  VolumeServer(uint db_idx, std::string vs_addr, std::shared_ptr<grpc::Channel> channel) : db_idx(db_idx), vs_addr(vs_addr), sm_stub_(ShardMasterService::NewStub(channel)) {
     // db name
     std::ostringstream buffer;
     buffer << "db-volume-server-" << this->db_idx;
@@ -34,8 +30,7 @@ class VolumeServer final : public VolumeServerService::Service {
     leveldb::Options options;
     options.create_if_missing = true;
 
-    leveldb::Status status =
-        leveldb::DB::Open(options, this->db_name, &this->db);
+    leveldb::Status status = leveldb::DB::Open(options, this->db_name, &this->db);
     assert(status.ok());
 
     // ask shard-master to join
@@ -52,14 +47,11 @@ class VolumeServer final : public VolumeServerService::Service {
 
   ~VolumeServer() { delete this->db; }
 
-  grpc::Status Get(grpc::ServerContext* context, const GetRequest* request,
-                   GetResponse* response) override;
+  grpc::Status Get(grpc::ServerContext* context, const GetRequest* request, GetResponse* response) override;
 
-  grpc::Status Put(grpc::ServerContext* context, const PutRequest* request,
-                   Empty* response) override;
+  grpc::Status Put(grpc::ServerContext* context, const PutRequest* request, Empty* response) override;
 
-  grpc::Status Delete(grpc::ServerContext* context,
-                      const DeleteRequest* request, Empty* response) override;
+  grpc::Status Delete(grpc::ServerContext* context, const DeleteRequest* request, Empty* response) override;
 
   void requestJoin();
 
@@ -82,8 +74,7 @@ class VolumeServer final : public VolumeServerService::Service {
       std::cout << this->config[entry].vs_addr << ": ";
       auto& shards = this->config[entry].shards;
       for (int shard_idx = 0; shard_idx < (int)shards.size(); ++shard_idx) {
-        std::cout << "{" << shards[shard_idx].lower << ", "
-                  << shards[shard_idx].upper << "} ";
+        std::cout << "{" << shards[shard_idx].lower << ", " << shards[shard_idx].upper << "} ";
       }
       std::cout << '\n';
     }

@@ -4,10 +4,7 @@
 #include "volume_server.cc"
 
 void RunServer(std::string server_address, int server_id) {
-  VolumeServer volume_server(
-      server_id, server_address,
-      grpc::CreateChannel(SHARD_MASTER_ADDR,
-                          grpc::InsecureChannelCredentials()));
+  VolumeServer volume_server(server_id, server_address, grpc::CreateChannel(SHARD_MASTER_ADDR, grpc::InsecureChannelCredentials()));
 
   ::grpc::ServerBuilder builder;
   builder.AddListeningPort(server_address, ::grpc::InsecureServerCredentials());
@@ -15,8 +12,7 @@ void RunServer(std::string server_address, int server_id) {
   builder.RegisterService(&volume_server);
   std::unique_ptr<::grpc::Server> server = builder.BuildAndStart();
 
-  std::cout << "* VolumeServer " << server_id << ": Listening on "
-            << server_address << std::endl;
+  std::cout << "* VolumeServer " << server_id << ": Listening on " << server_address << std::endl;
   server->Wait();
 }
 

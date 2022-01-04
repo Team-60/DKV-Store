@@ -5,8 +5,7 @@ struct SMShard {
   int lower;
   int upper;
 
-  const std::pair<SMShard, SMShard> subtract(const SMShard& a,
-                                             const SMShard& b) {
+  const std::pair<SMShard, SMShard> subtract(const SMShard& a, const SMShard& b) {
     // a - b
     std::pair<SMShard, SMShard> answer;
     answer.first = {.lower = -1, .upper = -1};

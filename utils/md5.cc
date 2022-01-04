@@ -66,31 +66,17 @@ inline MD5::uint4 MD5::H(uint4 x, uint4 y, uint4 z) { return x ^ y ^ z; }
 inline MD5::uint4 MD5::I(uint4 x, uint4 y, uint4 z) { return y ^ (x | ~z); }
 
 // rotate_left rotates x left n bits.
-inline MD5::uint4 MD5::rotate_left(uint4 x, int n) {
-  return (x << n) | (x >> (32 - n));
-}
+inline MD5::uint4 MD5::rotate_left(uint4 x, int n) { return (x << n) | (x >> (32 - n)); }
 
 // FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4.
 // Rotation is separate from addition to prevent recomputation.
-inline void MD5::FF(uint4 &a, uint4 b, uint4 c, uint4 d, uint4 x, uint4 s,
-                    uint4 ac) {
-  a = rotate_left(a + F(b, c, d) + x + ac, s) + b;
-}
+inline void MD5::FF(uint4 &a, uint4 b, uint4 c, uint4 d, uint4 x, uint4 s, uint4 ac) { a = rotate_left(a + F(b, c, d) + x + ac, s) + b; }
 
-inline void MD5::GG(uint4 &a, uint4 b, uint4 c, uint4 d, uint4 x, uint4 s,
-                    uint4 ac) {
-  a = rotate_left(a + G(b, c, d) + x + ac, s) + b;
-}
+inline void MD5::GG(uint4 &a, uint4 b, uint4 c, uint4 d, uint4 x, uint4 s, uint4 ac) { a = rotate_left(a + G(b, c, d) + x + ac, s) + b; }
 
-inline void MD5::HH(uint4 &a, uint4 b, uint4 c, uint4 d, uint4 x, uint4 s,
-                    uint4 ac) {
-  a = rotate_left(a + H(b, c, d) + x + ac, s) + b;
-}
+inline void MD5::HH(uint4 &a, uint4 b, uint4 c, uint4 d, uint4 x, uint4 s, uint4 ac) { a = rotate_left(a + H(b, c, d) + x + ac, s) + b; }
 
-inline void MD5::II(uint4 &a, uint4 b, uint4 c, uint4 d, uint4 x, uint4 s,
-                    uint4 ac) {
-  a = rotate_left(a + I(b, c, d) + x + ac, s) + b;
-}
+inline void MD5::II(uint4 &a, uint4 b, uint4 c, uint4 d, uint4 x, uint4 s, uint4 ac) { a = rotate_left(a + I(b, c, d) + x + ac, s) + b; }
 
 //////////////////////////////////////////////
 
@@ -126,9 +112,7 @@ void MD5::init() {
 // decodes input (unsigned char) into output (uint4). Assumes len is a multiple
 // of 4.
 void MD5::decode(uint4 output[], const uint1 input[], size_type len) {
-  for (unsigned int i = 0, j = 0; j < len; i++, j += 4)
-    output[i] = ((uint4)input[j]) | (((uint4)input[j + 1]) << 8) |
-                (((uint4)input[j + 2]) << 16) | (((uint4)input[j + 3]) << 24);
+  for (unsigned int i = 0, j = 0; j < len; i++, j += 4) output[i] = ((uint4)input[j]) | (((uint4)input[j + 1]) << 8) | (((uint4)input[j + 2]) << 16) | (((uint4)input[j + 3]) << 24);
 }
 
 //////////////////////////////
@@ -256,8 +240,7 @@ void MD5::update(const unsigned char input[], size_type length) {
     transform(buffer);
 
     // transform chunks of blocksize (64 bytes)
-    for (i = firstpart; i + blocksize <= length; i += blocksize)
-      transform(&input[i]);
+    for (i = firstpart; i + blocksize <= length; i += blocksize) transform(&input[i]);
 
     index = 0;
   } else
@@ -270,19 +253,14 @@ void MD5::update(const unsigned char input[], size_type length) {
 //////////////////////////////
 
 // for convenience provide a verson with signed char
-void MD5::update(const char input[], size_type length) {
-  update((const unsigned char *)input, length);
-}
+void MD5::update(const char input[], size_type length) { update((const unsigned char *)input, length); }
 
 //////////////////////////////
 
 // MD5 finalization. Ends an MD5 message-digest operation, writing the
 // the message digest and zeroizing the context.
 MD5 &MD5::finalize() {
-  static unsigned char padding[64] = {
-      0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0,    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0,    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  static unsigned char padding[64] = {0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
   if (!finalized) {
     // Save number of bits
@@ -325,9 +303,7 @@ std::string MD5::hexdigest() const {
 
 //////////////////////////////
 
-std::ostream &operator<<(std::ostream &out, MD5 md5) {
-  return out << md5.hexdigest();
-}
+std::ostream &operator<<(std::ostream &out, MD5 md5) { return out << md5.hexdigest(); }
 
 //////////////////////////////
 
