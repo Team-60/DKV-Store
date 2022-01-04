@@ -15,9 +15,8 @@ void RunServer(std::string server_address) {
   server->Wait();
 }
 
-
 int main(int argc, char* argv[]) {
-  std::string addr = (argc > 1) ? argv[1]: "127.0.0.1:8080";
+  std::string addr = (argc > 1) ? argv[1] : "127.0.0.1:8080";
   RunServer(addr);
   return 0;
 }
