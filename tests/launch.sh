@@ -2,6 +2,7 @@
 : '
 Args:
 1) Number of volume_servers to spawn
+2) flag "D" for complete rebuild / "F" for formatting (Passed directly to ../build.sh)
 '
 
 ## constants
@@ -13,15 +14,34 @@ if [ $# -lt 1 ]; then
     exit 2
 fi
 
-pushd ../cmake/build
+BUILD_ARGS=""
+if [ $# -eq 2 ]; then 
+    BUILD_ARGS=$2
+fi
 
-# run shard-master
+# build
+pushd ..
+echo
+
+echo "--------------- STARTING BUILD ---------------"
+bash build.sh $BUILD_ARGS
+echo "--------------- BUILD COMPLETE ---------------"
+echo 
+
+popd
+echo
+
+# run
+pushd ../cmake/build
+echo
+
+## run shard-master
 echo "> running shard_master at $BASE_ADDR:8080"
 ./shard_master & shard_master_pid=$!
 
 sleep 2
 
-# run initial volume servers
+## run initial volume servers
 for ((i = 1; i <= $1; i ++))
 do 
     let PORT=8080+i
