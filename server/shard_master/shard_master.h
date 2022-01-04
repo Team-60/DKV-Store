@@ -1,83 +1,53 @@
+#include <grpcpp/grpcpp.h>
+
 #include <iostream>
 #include <string>
-
-#include <grpcpp/grpcpp.h>
-#include "shard_master.grpc.pb.h"
+#include <vector>
 
 #include "leveldb/db.h"
+#include "shard_master.grpc.pb.h"
+#include "utils.h"
 
 using google::protobuf::Empty;
 
 class ShardMaster final : public ShardMasterService::Service {
+ public:
+  ShardMaster() {
+    leveldb::Options options;
+    options.create_if_missing = true;
 
-  public:
-    ShardMaster (const std::vector<std::string>& vserver_addr) : numVServers(vserver_addr.size()) {
-      
-      leveldb::Options options;
-      options.create_if_missing = true;
+    leveldb::Status openDBStatus = leveldb::DB::Open(options, this->db_name, &this->db);
 
-      leveldb::Status openDBStatus = leveldb::DB::Open(options, this->db_name, &this->db);
-
-      if (!openDBStatus.ok()) {
-        std::cerr << "Error : Can't open leveldb" << '\n';
-        exit(-1);
-      }
-
-      // Seralize into db
-      leveldb::Status putStatus = this->db->Put(leveldb::WriteOptions(), "numVServers", std::to_string(numVServers));
-      assert(putStatus.ok());
-
-      for (int i = 0; i < numVServers; ++i) {
-        putStatus = this->db->Put(leveldb::WriteOptions(), std::to_string(i), vserver_addr[i]);
-        assert(putStatus.ok());
-      }
-
+    if (!openDBStatus.ok()) {
+      std::cerr << "Error: Can't open leveldb" << '\n';
+      exit(-1);
     }
 
-    ShardMaster () {
-      leveldb::Options options;
-      options.create_if_missing = false;
+    // config
+    this->config_num = 0;  // INITIAL CONFIGURATION IS 0
+    this->sm_config.clear();
+  }
 
-      leveldb::Status openDBStatus = leveldb::DB::Open(options, this->db_name, &this->db);
+  ~ShardMaster() { delete this->db; }
 
-      if (!openDBStatus.ok()) {
-        std::cerr << "Error : Can't open leveldb" << '\n';
-        exit(-1);
-      }
+  grpc::Status Query(grpc::ServerContext* context, const Empty* request, QueryResponse* response) override;
 
-      std::string numVServers_str;
-      leveldb::Status getStatus = this->db->Get(leveldb::ReadOptions(), "numVServers", &numVServers_str);
-      assert(getStatus.ok());
-      numVServers = std::stoi(numVServers_str);
+  grpc::Status QueryConfigNum(grpc::ServerContext* context, const Empty* request, QueryConfigNumResponse* response) override;
 
-      vserver_addr.resize(numVServers);
+  grpc::Status Move(grpc::ServerContext* context, const MoveRequest* request, Empty* response) override;
 
-      for (int i = 0; i < numVServers; ++i) {
-        getStatus = this->db->Get(leveldb::ReadOptions(), std::to_string(i), &vserver_addr[i]);
-        assert(getStatus.ok());
-      }
+  grpc::Status Join(grpc::ServerContext* context, const JoinRequest* request, Empty* response) override;
 
-      std::cout << "Shardmaster restarted with " << numVServers << " servers, with addresses:" << "\n";
-      for (auto &addr : vserver_addr) {
-        std::cout << addr << '\n';
-      }
-      std::cout << std::flush;
-    }
+  grpc::Status Leave(grpc::ServerContext* context, const LeaveRequest* request, Empty* response) override;
 
-    ~ShardMaster () {
-    }
+ private:
+  const std::string db_name = "db-shard-master";
+  leveldb::DB* db;
+  // config
+  std::vector<SMConfigEntry> sm_config;
+  uint config_num;
+  const uint NUM_CHUNKS = 1000;
+  std::mutex mtx;
 
-    grpc::Status Query(grpc::ServerContext* context, const Empty* request, QueryResponse* response) override;
-
-    grpc::Status Move(grpc::ServerContext* context, const MoveRequest* request, Empty* response) override;
-
-    grpc::Status Join(grpc::ServerContext* context, const JoinRequest* request, JoinResponse* response) override;
-
-    grpc::Status Leave(grpc::ServerContext* context, const LeaveRequest* request, Empty* response) override;
-
-  private:
-    const std::string db_name = "db-shard-master";
-    int numVServers;
-    std::vector<std::string> vserver_addr;
-    leveldb::DB* db;
+  void redistributeChunks();
 };

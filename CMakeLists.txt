@@ -87,6 +87,9 @@ add_custom_command(
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
+# utils
+set("utils_srcs" "${CMAKE_SOURCE_DIR}/utils")
+
 # volume_server_grpc_proto
 add_library(volume_server_grpc_proto
   ${volume_server_grpc_srcs}
@@ -120,11 +123,14 @@ target_link_libraries(shard_master
   ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(shard_master PUBLIC 
   ${LEVELDB_PREFIX}/include/)
+target_include_directories(shard_master PUBLIC ${utils_srcs})
 
 # add executable volume_server.cc
 add_executable(volume_server "server/volume_server/main.cc"
   ${volume_server_proto_srcs}
-  ${volume_server_grpc_srcs})
+  ${volume_server_grpc_srcs}
+  ${shard_master_proto_srcs}
+  ${shard_master_grpc_srcs})
 target_link_libraries(volume_server
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF}
@@ -132,6 +138,7 @@ target_link_libraries(volume_server
   ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(volume_server PUBLIC 
   ${LEVELDB_PREFIX}/include/)
+target_include_directories(volume_server PUBLIC ${utils_srcs})
 
 # client executable
 add_executable(client "client/client.cc"
@@ -142,3 +149,4 @@ add_executable(client "client/client.cc"
 target_link_libraries(client
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF})
+target_include_directories(client PUBLIC ${utils_srcs})

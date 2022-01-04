@@ -4,7 +4,7 @@
 #include "volume_server.cc"
 
 void RunServer(std::string server_address, int server_id) {
-  VolumeServer volume_server(server_id);
+  VolumeServer volume_server(server_id, server_address, grpc::CreateChannel(SHARD_MASTER_ADDR, grpc::InsecureChannelCredentials()));
 
   ::grpc::ServerBuilder builder;
   builder.AddListeningPort(server_address, ::grpc::InsecureServerCredentials());
@@ -16,10 +16,9 @@ void RunServer(std::string server_address, int server_id) {
   server->Wait();
 }
 
-
 int main(int argc, char* argv[]) {
-  std::string server_address = (argc > 1) ? argv[1]: "127.0.0.1:8081";
-  int server_id = (argc > 2) ? atoi(argv[2]): 1;
+  std::string server_address = (argc > 1) ? argv[1] : "127.0.0.1:8081";
+  int server_id = (argc > 2) ? atoi(argv[2]) : 1;
   RunServer(server_address, server_id);
   return 0;
 }

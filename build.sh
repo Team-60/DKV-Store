@@ -1,8 +1,16 @@
 # Create build directory
 ## flag "D" provided -> rebuild
-if [ $# -eq 1 ]; then
-	if [ $1 == "D" ]; then echo "Rebuilding..." && rm -rf cmake; fi
+if [[ $* == *D* ]]; then echo "* Rebuilding..." && rm -rf cmake; fi
+## flag "F" provided -> auto format
+EXCLUDE_FOLDER=./cmake
+if [[ $* == *F* ]]; then 
+	echo "* Formatting Project..."
+	find . \( -name "*.h" -or -name "*.cc" \) -not -path "${EXCLUDE_FOLDER}" \
+		-exec clang-format -i -style=file {} \; \
+		-exec echo "- formatting " {} \;
 fi
+echo "-------------"
+
 mkdir -p cmake/build
 
 pushd cmake/build
