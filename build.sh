@@ -6,7 +6,7 @@ EXCLUDE_FOLDER=./cmake
 if [[ $* == *F* ]]; then 
 	echo "* Formatting Project..."
 	find . \( -name "*.h" -or -name "*.cc" \) -not -path "${EXCLUDE_FOLDER}" \
-		-exec clang-format -i -style=Google {} \; \
+		-exec clang-format -i -style=file {} \; \
 		-exec echo "- formatting " {} \;
 fi
 echo "-------------"
