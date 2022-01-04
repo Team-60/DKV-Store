@@ -60,7 +60,6 @@ void VolumeServer::fetchSMConfig() {
   // periodically fetches config from shard-master & incorporates changes (if
   // any)
   Empty request;
-
   QueryConfigNumResponse response;
   grpc::ClientContext context;
   grpc::Status status = sm_stub_->QueryConfigNum(&context, request, &response);

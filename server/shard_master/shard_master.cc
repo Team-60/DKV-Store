@@ -20,7 +20,7 @@ grpc::Status ShardMaster::Query(grpc::ServerContext* context, const Empty* reque
 }
 
 grpc::Status ShardMaster::QueryConfigNum(grpc::ServerContext* context, const Empty* request, QueryConfigNumResponse* response) {
-  std::cout << "* Shardmaster: Query config called - " << this->config_num << std::endl;  // obviously comment afterwards
+  // std::cout << "* Shardmaster: Query config called - " << this->config_num << std::endl;  // obviously comment afterwards
 
   response->set_config_num(this->config_num);
   return grpc::Status::OK;

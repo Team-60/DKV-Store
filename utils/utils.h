@@ -1,5 +1,8 @@
+#include <iostream>
 #include <string>
 #include <vector>
+
+// ---------------------------------- SHARD MASTER CONFIG UTILS ----------------------------------
 
 struct SMShard {
   int lower;
@@ -38,6 +41,7 @@ struct SMShard {
       answer.first = {.lower = b.upper + 1, .upper = a.upper};
       return answer;
     }
+
     assert(false);
   }
 };
@@ -46,3 +50,16 @@ struct SMConfigEntry {
   std::vector<SMShard> shards;
   std::string vs_addr;
 };
+
+// ---------------------------------- HASH UTILS ----------------------------------
+
+uint get_hash_uint(const std::string& hash) {
+  // converts md5 hash to an unsigned int
+  uint seg1 = std::stoul(hash.substr(0, 8), nullptr, 16);
+  uint seg2 = std::stoul(hash.substr(8, 8), nullptr, 16);
+  uint seg3 = std::stoul(hash.substr(16, 8), nullptr, 16);
+  uint seg4 = std::stoul(hash.substr(24, 8), nullptr, 16);
+
+  uint hash_int = seg1 ^ seg2 ^ seg3 ^ seg4;
+  return hash_int;
+}
