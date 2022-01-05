@@ -10,9 +10,7 @@
 using namespace std;
 
 int main() {
-  char hostnamebuf[256] = "127.0.0.1";
-  gethostname(hostnamebuf, 256);
-  string hostname(hostnamebuf);
+  std::string hostname = "127.0.0.1";
 
   string shardmaster_addr = hostname + ":8080";
   start_shardmaster(shardmaster_addr);
@@ -24,10 +22,6 @@ int main() {
   start_shardkvs({skv_1, skv_2, skv_3}, shardmaster_addr);
 
   map<string, vector<SMShard>> m;
-
-  assert(test_join(shardmaster_addr, skv_1, true));
-  assert(test_join(shardmaster_addr, skv_2, true));
-  assert(test_join(shardmaster_addr, skv_3, true));
 
   // sleep to allow shardkvs to query and get initial config
   std::chrono::milliseconds timespan(1000);
