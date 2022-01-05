@@ -26,7 +26,7 @@ jobs:
     - name: Build
       run: |
         # Create build directory
-        rm -rf cmake; fi
+        rm -rf cmake;
         mkdir -p cmake/build
         pushd cmake/build
         cmake ../..
