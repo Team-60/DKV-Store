@@ -59,7 +59,7 @@ struct SMConfigEntry {
 
 // ---------------------------------- HASH UTILS ----------------------------------
 
-uint get_hash_uint(const std::string& hash) {
+inline uint get_hash_uint(const std::string& hash) {
   // converts md5 hash to an unsigned int
   uint seg1 = std::stoul(hash.substr(0, 8), nullptr, 16);
   uint seg2 = std::stoul(hash.substr(8, 8), nullptr, 16);
