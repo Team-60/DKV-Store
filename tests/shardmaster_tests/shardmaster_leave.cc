@@ -9,9 +9,7 @@
 using namespace std;
 
 int main() {
-  char hostnamebuf[256] = "127.0.0.1";
-  gethostname(hostnamebuf, 256);
-  string hostname(hostnamebuf);
+  std::string hostname = "127.0.0.1";
 
   string shardmaster_addr = hostname + ":8080";
   start_shardmaster(shardmaster_addr);
@@ -26,8 +24,8 @@ int main() {
   m.clear();
 
   assert(test_join(shardmaster_addr, skv_2, true));
-  m[skv_1].push_back({0, 500});
-  m[skv_2].push_back({501, 1000});
+  m[skv_1].push_back({0, 499});
+  m[skv_2].push_back({500, 1000});
   assert(test_query(shardmaster_addr, m));
   m.clear();
 

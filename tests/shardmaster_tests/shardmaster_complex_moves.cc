@@ -9,9 +9,7 @@
 using namespace std;
 
 int main() {
-  char hostnamebuf[256] = "127.0.0.1";
-  gethostname(hostnamebuf, 256);
-  string hostname(hostnamebuf);
+  std::string hostname = "127.0.0.1";
 
   string shardmaster_addr = hostname + ":8080";
   start_shardmaster(shardmaster_addr);
@@ -30,21 +28,21 @@ int main() {
   assert(test_join(shardmaster_addr, skv_4, true));
   assert(test_join(shardmaster_addr, skv_5, true));
 
-  m[skv_1].push_back({0, 200});
-  m[skv_2].push_back({201, 400});
-  m[skv_3].push_back({401, 600});
-  m[skv_4].push_back({601, 800});
-  m[skv_5].push_back({801, 1000});
+  m[skv_1].push_back({0, 199});
+  m[skv_2].push_back({200, 399});
+  m[skv_3].push_back({400, 599});
+  m[skv_4].push_back({600, 799});
+  m[skv_5].push_back({800, 1000});
   assert(test_query(shardmaster_addr, m));
   m.clear();
 
   // move a shard completely off a server
-  assert(test_move(shardmaster_addr, skv_3, {0, 200}, true));
-  m[skv_2].push_back({201, 400});
-  m[skv_3].push_back({0, 200});
-  m[skv_3].push_back({401, 600});
-  m[skv_4].push_back({601, 800});
-  m[skv_5].push_back({801, 1000});
+  assert(test_move(shardmaster_addr, skv_3, {0, 199}, true));
+  m[skv_2].push_back({200, 399});
+  m[skv_3].push_back({0, 199});
+  m[skv_3].push_back({400, 599});
+  m[skv_4].push_back({600, 799});
+  m[skv_5].push_back({800, 1000});
   assert(test_query(shardmaster_addr, m));
   m.clear();
 
@@ -60,8 +58,8 @@ int main() {
   assert(test_leave(shardmaster_addr, skv_1, true));
   assert(test_leave(shardmaster_addr, skv_2, true));
   assert(test_leave(shardmaster_addr, skv_5, true));
-  m[skv_3].push_back({0, 500});
-  m[skv_4].push_back({501, 1000});
+  m[skv_3].push_back({0, 499});
+  m[skv_4].push_back({500, 1000});
   assert(test_query(shardmaster_addr, m));
 
   return 0;

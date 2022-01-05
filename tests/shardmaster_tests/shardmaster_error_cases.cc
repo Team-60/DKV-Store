@@ -9,9 +9,7 @@
 using namespace std;
 
 int main() {
-  char hostnamebuf[256] = "127.0.0.1";
-  gethostname(hostnamebuf, 256);
-  string hostname(hostnamebuf);
+  std::string hostname = "127.0.0.1";
 
   string shardmaster_addr = hostname + ":8080";
   start_shardmaster(shardmaster_addr);
