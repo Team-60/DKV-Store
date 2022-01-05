@@ -29,6 +29,18 @@ grpc::Status ShardMaster::QueryConfigNum(grpc::ServerContext* context, const Emp
 grpc::Status ShardMaster::Move(grpc::ServerContext* context, const MoveRequest* request, Empty* response) {
   std::cout << "* Shardmaster: Move called - " << this->config_num << std::endl;
 
+  bool serverExists = false;
+  for (SMConfigEntry& config: this->sm_config) {
+    if (config.vs_addr == request->server()) {
+      serverExists = true;
+      break;
+    }
+  }
+
+  if (!serverExists) {
+    return grpc::Status(grpc::StatusCode::NOT_FOUND, "server doesn't exists");
+  }
+
   auto move_vs_addr = request->server();
   auto shard = request->shard();
   SMShard move_shard;
@@ -83,16 +95,22 @@ grpc::Status ShardMaster::Join(grpc::ServerContext* context, const JoinRequest* 
 grpc::Status ShardMaster::Leave(grpc::ServerContext* context, const LeaveRequest* request, Empty* response) {
   std::cout << "* Shardmaster: Leave called - " << this->config_num << "; vs_addr: " << request->server_addr() << std::endl;
 
+  bool serverExists = false;
   this->mtx.lock();
   for (int i = 0; i < this->sm_config.size(); ++i) {
     if (this->sm_config[i].vs_addr == request->server_addr()) {
       this->sm_config.erase(this->sm_config.begin() + i);
+      serverExists = true;
       break;
     }
   }
   this->mtx.unlock();
 
-  this->redistributeChunks();
+  if (serverExists) {
+    this->redistributeChunks();
+  }else {
+    return grpc::Status(grpc::StatusCode::NOT_FOUND, "server not found");
+  }
 
   return grpc::Status::OK;
 }
