@@ -83,7 +83,7 @@ bool test_get(const std::string& addr, unsigned int key,
 bool test_put(const std::string& addr, unsigned int key,
               const std::string& value, bool success);
 
-bool test_append(const std::string& addr, unsigned int key,
+bool test_delete(const std::string& addr, unsigned int key,
                  const std::string& value, bool success);
 
 // testing functions for shardmaster

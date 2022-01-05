@@ -147,7 +147,7 @@ bool test_put(const std::string& addr, unsigned int key_int,
   return status.ok() == success;
 }
 
-bool test_append(const std::string& addr, unsigned int key_int,
+bool test_delete(const std::string& addr, unsigned int key_int,
                  const std::string& value, bool success) {
   auto channel = grpc::CreateChannel(addr, grpc::InsecureChannelCredentials());
   auto stub = VolumeServerService::NewStub(channel);
