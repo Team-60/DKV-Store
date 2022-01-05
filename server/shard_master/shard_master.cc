@@ -61,6 +61,13 @@ grpc::Status ShardMaster::Move(grpc::ServerContext* context, const MoveRequest* 
 grpc::Status ShardMaster::Join(grpc::ServerContext* context, const JoinRequest* request, Empty* response) {
   std::cout << "* Shardmaster: Join called - " << this->config_num << "; vs_addr: " << request->server_addr() << std::endl;
 
+  // check if already exists
+  for (SMConfigEntry& config: this->sm_config) {
+    if (config.vs_addr == request->server_addr()) {
+      return grpc::Status(grpc::StatusCode::ALREADY_EXISTS, "server already exists");
+    }
+  }
+
   SMConfigEntry new_configEntry;
   new_configEntry.vs_addr = request->server_addr();
 
