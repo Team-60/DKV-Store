@@ -33,6 +33,7 @@ void spawn_service(const std::string& addr, Args&&... args) {
   Service service(std::forward<Args>(args)...);
   builder.RegisterService(&service);
   std::unique_ptr<::grpc::Server> server = builder.BuildAndStart();
+  std::cout << "* started on " << addr << std::endl;
   server->Wait();
 }
 
@@ -43,7 +44,7 @@ void spawn_service_in_thread(const std::string& addr, Args&&... args) {
                   std::forward<Args>(args)...);
   thr.detach();
   // sleep to allow service to start
-  std::chrono::milliseconds timespan(100);
+  std::chrono::milliseconds timespan(300);
   std::this_thread::sleep_for(timespan);
 }
 
