@@ -1,3 +1,6 @@
+#ifndef UTILS
+#define UTILS
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -44,6 +47,11 @@ struct SMShard {
 
     assert(false);
   }
+
+  bool operator==(const SMShard& rhs) const {
+    return lower == rhs.lower && upper == rhs.upper;
+  }
+
 };
 
 struct SMConfigEntry {
@@ -63,3 +71,5 @@ uint get_hash_uint(const std::string& hash) {
   uint hash_int = seg1 ^ seg2 ^ seg3 ^ seg4;
   return hash_int;
 }
+
+#endif // UTILS

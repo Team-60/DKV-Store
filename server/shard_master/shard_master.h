@@ -1,3 +1,6 @@
+#ifndef SHARD_MASTER
+#define SHARD_MASTER
+
 #include <grpcpp/grpcpp.h>
 
 #include <iostream>
@@ -51,3 +54,5 @@ class ShardMaster final : public ShardMasterService::Service {
 
   void redistributeChunks();
 };
+
+#endif //SHARD_MASTER

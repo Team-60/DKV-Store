@@ -1,3 +1,6 @@
+#ifndef VOLUME_SERVER
+#define VOLUME_SERVER
+
 #include <grpcpp/grpcpp.h>
 
 #include <chrono>
@@ -81,3 +84,5 @@ class VolumeServer final : public VolumeServerService::Service {
     std::cout << std::endl;
   }
 };
+
+#endif // VOLUME_SERVER
