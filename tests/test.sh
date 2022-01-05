@@ -68,6 +68,8 @@ source_if_exists(){
 
 
 run_test(){
+  # clear database before each tests
+  clear_db
 	TEST_SECTION="$1"
 	TEST_NAME="$2"
 	TEST_NUMBER="$3"
@@ -168,6 +170,10 @@ clean_all_tests() {
 	done
 }
 
+clear_db() {
+  rm -rf db*
+}
+
 for arg in "$@"
 do
     case $arg in
@@ -195,6 +201,7 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 NUM_PASSED=0
 NUM_FAILED=0
 TEST_NUMBER=1
+
 
 for s in $TEST_SECTIONS; do
 	TEST_SPLITTER=" ${BLUE}===${NC} ${YELLOW}$s${NC} ${BLUE}===${NC}"
