@@ -8,40 +8,38 @@
 // ---------------------------------- SHARD MASTER CONFIG UTILS ----------------------------------
 
 struct SMShard {
-  int lower;
-  int upper;
+  uint lower;
+  uint upper;
 
-  const std::pair<SMShard, SMShard> subtract(const SMShard& a, const SMShard& b) {
+  const std::vector<SMShard> subtract(const SMShard& a, const SMShard& b) {
     // a - b
-    std::pair<SMShard, SMShard> answer;
-    answer.first = {.lower = -1, .upper = -1};
-    answer.second = answer.first;
+    std::vector<SMShard> answer;
 
     if (a.upper < b.lower || b.upper < a.lower) {
-      // no overlap - return just {a, -1}
-      answer.first = a;
+      // no overlap - return just {a}
+      answer.push_back(a);
       return answer;
     }
 
     if (a.lower >= b.lower && a.upper <= b.upper) {
-      // total overlap - return {-1, -1}
+      // total overlap - return {}
       return answer;
     }
 
     if (a.lower < b.lower && a.upper > b.upper) {
       // b is strictly inside a -- return two range results
-      answer.first = {.lower = a.lower, .upper = b.lower - 1};
-      answer.second = {.lower = b.upper + 1, .upper = a.upper};
+      answer.push_back(SMShard {.lower = a.lower, .upper = b.lower - 1});
+      answer.push_back(SMShard {.lower = b.upper + 1, .upper = a.upper});
       return answer;
     }
 
     if (a.lower < b.lower) {
-      answer.first = {.lower = a.lower, .upper = b.lower - 1};
+      answer.push_back(SMShard {.lower = a.lower, .upper = b.lower - 1});
       return answer;
     }
 
     if (b.upper < a.upper) {
-      answer.first = {.lower = b.upper + 1, .upper = a.upper};
+      answer.push_back(SMShard {.lower = b.upper + 1, .upper = a.upper});
       return answer;
     }
 

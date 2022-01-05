@@ -39,12 +39,12 @@ grpc::Status ShardMaster::Move(grpc::ServerContext* context, const MoveRequest* 
     std::vector<SMShard> new_shards;
     for (SMShard& shard : config.shards) {
       // shard - move_shard
-      std::pair<SMShard, SMShard> result = shard.subtract(shard, move_shard);
-      if (result.first.lower != -1) {
-        new_shards.push_back(result.first);
+      std::vector<SMShard> result = shard.subtract(shard, move_shard);
+      if (result.size() > 0) {
+        new_shards.push_back(result[0]);
       }
-      if (result.second.lower != -1) {
-        new_shards.push_back(result.second);
+      if (result.size() > 1) {
+        new_shards.push_back(result[1]);
       }
     }
     if (config.vs_addr == move_vs_addr) {
