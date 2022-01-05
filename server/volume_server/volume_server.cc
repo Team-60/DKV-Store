@@ -53,7 +53,10 @@ void VolumeServer::requestJoin() {
   request.set_server_addr(vs_addr);
 
   grpc::Status status = this->sm_stub_->Join(&context, request, &response);
-  assert(status.ok());
+  if (!status.ok()) {
+    std::cerr << status.error_message() << std::endl;
+    exit(-1);
+  }
 }
 
 void VolumeServer::fetchSMConfig() {
@@ -63,7 +66,11 @@ void VolumeServer::fetchSMConfig() {
   QueryConfigNumResponse response;
   grpc::ClientContext context;
   grpc::Status status = sm_stub_->QueryConfigNum(&context, request, &response);
-  assert(status.ok());
+
+  if (!status.ok()) {
+    std::cerr << status.error_message() << std::endl;
+    exit(-1);
+  }
 
   if (this->config_num < response.config_num()) {
     // fetch config & update
