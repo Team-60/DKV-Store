@@ -3,6 +3,12 @@
 grpc::Status VolumeServer::Get(grpc::ServerContext* context, const GetRequest* request, GetResponse* response) {
   std::cout << "VS" << this->db_idx << ") Get: key=" << request->key() << std::endl;
 
+  if (!isMyKey(request->key())) {
+    response->set_key("");
+    response->set_value("");
+    return grpc::Status(grpc::StatusCode::NOT_FOUND, "wrong volume server for key");
+  }
+
   std::string value;
   leveldb::Status s = this->db->Get(leveldb::ReadOptions(), request->key(), &value);
   if (!s.ok()) {
@@ -19,6 +25,10 @@ grpc::Status VolumeServer::Get(grpc::ServerContext* context, const GetRequest* r
 grpc::Status VolumeServer::Put(grpc::ServerContext* context, const PutRequest* request, google::protobuf::Empty* response) {
   std::cout << "VS" << this->db_idx << ") Put: key=" << request->key() << " value=" << request->value() << std::endl;
 
+  if (!isMyKey(request->key())) {
+    return grpc::Status(grpc::StatusCode::NOT_FOUND, "wrong volume server for key");
+  }
+
   std::string value;
   leveldb::Status s = this->db->Get(leveldb::ReadOptions(), request->key(), &value);
   if (s.ok()) {
@@ -31,6 +41,10 @@ grpc::Status VolumeServer::Put(grpc::ServerContext* context, const PutRequest* r
 
 grpc::Status VolumeServer::Delete(grpc::ServerContext* context, const DeleteRequest* request, google::protobuf::Empty* response) {
   std::cout << "VS" << this->db_idx << ") Delete: key=" << request->key() << " value=" << request->value() << std::endl;
+
+  if (!isMyKey(request->key())) {
+    return grpc::Status(grpc::StatusCode::NOT_FOUND, "wrong volume server for key");
+  }
 
   std::string value;
   leveldb::Status s = this->db->Get(leveldb::ReadOptions(), request->key(), &value);
@@ -96,6 +110,9 @@ void VolumeServer::fetchSMConfig() {
         nshard.lower = shards[shard_idx].lower(), nshard.upper = shards[shard_idx].upper();
         smce.shards.push_back(nshard);
       }
+      if (this->vs_addr == smce.vs_addr) {
+        this->my_config = smce;
+      }
       this->config.push_back(smce);
     }
     this->mtx.unlock();  // unlock
@@ -103,3 +120,20 @@ void VolumeServer::fetchSMConfig() {
     this->printCurrentConfig();
   }
 }
+
+bool VolumeServer::isMyKey(const std::string& key) {
+
+  std::string hash = md5(key);
+  uint hash_int = get_hash_uint(hash);
+  uint shard_mod = hash_int % this->num_chunks;
+
+  for (SMShard& shard : my_config.shards) {
+    if (shard.lower <= shard_mod && shard_mod <= shard.upper) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+

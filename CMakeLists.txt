@@ -89,7 +89,6 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 # utils
 set("utils_srcs" "${CMAKE_SOURCE_DIR}/utils")
-set("md5" "${CMAKE_SOURCE_DIR}/md5")
 set("shard_master_srcs" "${CMAKE_SOURCE_DIR}/server/shard_master")
 set("volume_server_srcs" "${CMAKE_SOURCE_DIR}/server/volume_server")
 
@@ -128,7 +127,7 @@ target_include_directories(shard_master PUBLIC
   ${utils_srcs})
 
 # add executable volume_server.cc
-add_executable(volume_server "server/volume_server/main.cc")
+add_executable(volume_server "server/volume_server/main.cc" ${utils_srcs}/md5.cc)
 target_link_libraries(volume_server
   shard_master_grpc_proto
   volume_server_grpc_proto
@@ -159,6 +158,7 @@ foreach(testsourcefile ${TEST_SOURCES})
     ${volume_server_grpc_srcs}
     "server/shard_master/shard_master.cc"
     "server/volume_server/volume_server.cc"
+    ${utils_srcs}/md5.cc
     test_utils/test_utils.cc test_utils/test_utils.h)
   target_link_libraries(${testname}
     ${_GRPC_GRPCPP}

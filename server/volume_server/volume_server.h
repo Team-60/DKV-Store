@@ -61,6 +61,7 @@ class VolumeServer final : public VolumeServerService::Service {
 
   void requestJoin();
   void fetchSMConfig();
+  bool isMyKey(const std::string& key);
 
   uint db_idx;
   std::string vs_addr;
@@ -70,7 +71,9 @@ class VolumeServer final : public VolumeServerService::Service {
   std::unique_ptr<ShardMasterService::Stub> sm_stub_;
   std::mutex mtx;  // for "config" exclusion while reading and writing
   uint config_num;
+  const uint num_chunks = 1000;
   std::vector<SMConfigEntry> config;
+  SMConfigEntry my_config;
 
   void printCurrentConfig() {
     std::cout << "VS" << this->db_idx << ") Current config\n";
