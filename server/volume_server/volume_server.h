@@ -13,6 +13,7 @@
 #include "leveldb/db.h"
 #include "shard_master.grpc.pb.h"
 #include "utils.h"
+#include "md5.h"
 #include "volume_server.grpc.pb.h"
 
 using google::protobuf::Empty;
@@ -56,11 +57,11 @@ class VolumeServer final : public VolumeServerService::Service {
 
   grpc::Status Delete(grpc::ServerContext* context, const DeleteRequest* request, Empty* response) override;
 
-  void requestJoin();
+ private:
 
+  void requestJoin();
   void fetchSMConfig();
 
- private:
   uint db_idx;
   std::string vs_addr;
   std::string db_name;
