@@ -217,3 +217,9 @@ echo -e "${NC}Tests Passed:${NC} ${YELLOW}$NUM_PASSED${NC} / ${YELLOW}$[$NUM_PAS
 echo -e "$SPLITTER"
 
 popd
+
+if [ "$NUM_FAILED" -ne "0" ]; then
+	exit 1
+fi
+
+echo "----------"
