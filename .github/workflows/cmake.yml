@@ -2,9 +2,9 @@ name: CMake
 
 on:
   push:
-    branches: [ main ]
+    branches: [ fix-workflows ]
   pull_request:
-    branches: [ main ]
+    branches: [ fix-workflows ]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
