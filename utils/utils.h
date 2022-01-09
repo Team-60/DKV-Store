@@ -28,18 +28,18 @@ struct SMShard {
 
     if (a.lower < b.lower && a.upper > b.upper) {
       // b is strictly inside a -- return two range results
-      answer.push_back(SMShard {.lower = a.lower, .upper = b.lower - 1});
-      answer.push_back(SMShard {.lower = b.upper + 1, .upper = a.upper});
+      answer.push_back(SMShard{.lower = a.lower, .upper = b.lower - 1});
+      answer.push_back(SMShard{.lower = b.upper + 1, .upper = a.upper});
       return answer;
     }
 
     if (a.lower < b.lower) {
-      answer.push_back(SMShard {.lower = a.lower, .upper = b.lower - 1});
+      answer.push_back(SMShard{.lower = a.lower, .upper = b.lower - 1});
       return answer;
     }
 
     if (b.upper < a.upper) {
-      answer.push_back(SMShard {.lower = b.upper + 1, .upper = a.upper});
+      answer.push_back(SMShard{.lower = b.upper + 1, .upper = a.upper});
       return answer;
     }
 
@@ -49,7 +49,6 @@ struct SMShard {
   bool operator==(const SMShard& rhs) const {
     return lower == rhs.lower && upper == rhs.upper;
   }
-
 };
 
 struct SMConfigEntry {
@@ -70,4 +69,4 @@ inline uint get_hash_uint(const std::string& hash) {
   return hash_int;
 }
 
-#endif // UTILS
+#endif  // UTILS

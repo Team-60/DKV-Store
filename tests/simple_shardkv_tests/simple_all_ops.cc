@@ -1,4 +1,5 @@
 #include <unistd.h>
+
 #include <cassert>
 #include <optional>
 #include <string>
@@ -9,7 +10,7 @@ using namespace std;
 
 int main() {
   std::string hostname = "127.0.0.1";
-  
+
   const string shardmaster_addr = hostname + ":8080";
   const string skv_1 = hostname + ":8081";
   const string skv_2 = hostname + ":8082";

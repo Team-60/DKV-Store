@@ -1,4 +1,5 @@
 #include <unistd.h>
+
 #include <cassert>
 #include <map>
 #include <optional>
@@ -40,7 +41,6 @@ int main() {
   m[skv_2].push_back({500, 1000});
   assert(test_query(shardmaster_addr, m));
   m.clear();
-
 
   // wait for the key to transfer
   std::this_thread::sleep_for(timespan);

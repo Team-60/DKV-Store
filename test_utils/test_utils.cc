@@ -1,11 +1,13 @@
+#include "test_utils.h"
+
 #include <fcntl.h>
 #include <google/protobuf/empty.pb.h>
-#include <sstream>
+
 #include <cstdio>
+#include <sstream>
 
 #include "shard_master.h"
 #include "volume_server.h"
-#include "test_utils.h"
 
 using Empty = google::protobuf::Empty;
 
@@ -29,7 +31,7 @@ void start_simple_shardkvs(const Addrs& addrs) {
 void start_simple_shardkv(const std::string& addr, const uint db_idx) {
   // shardmaster address is same for all simple spwaned shard servers
   std::string shardmaster_addr = "127.0.0.1:8080";
-  spawn_service_in_thread<VolumeServer, const uint&, const std::string&, 
+  spawn_service_in_thread<VolumeServer, const uint&, const std::string&,
                           const std::shared_ptr<grpc::Channel>>(addr, db_idx, addr, grpc::CreateChannel(shardmaster_addr, grpc::InsecureChannelCredentials()));
 }
 
@@ -44,7 +46,7 @@ void start_shardkv(const std::string& addr, const uint db_idx,
                    const std::string& shardmaster_addr) {
   // pass addr param twice because {addr, db_idx, shardmaster_addr} are the args to the
   // VolumeServer constructor
-  spawn_service_in_thread<VolumeServer, const uint&, const std::string&, 
+  spawn_service_in_thread<VolumeServer, const uint&, const std::string&,
                           const std::shared_ptr<grpc::Channel>>(addr, db_idx, addr, grpc::CreateChannel(shardmaster_addr, grpc::InsecureChannelCredentials()));
 }
 

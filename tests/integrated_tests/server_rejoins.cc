@@ -1,4 +1,5 @@
 #include <unistd.h>
+
 #include <cassert>
 #include <map>
 #include <optional>
@@ -10,7 +11,6 @@
 using namespace std;
 
 int main() {
-
   std::string hostname = "127.0.0.1";
 
   string shardmaster_addr = hostname + ":8080";

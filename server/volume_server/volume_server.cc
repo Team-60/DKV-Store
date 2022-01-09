@@ -34,7 +34,7 @@ grpc::Status VolumeServer::Put(grpc::ServerContext* context, const PutRequest* r
   if (s.ok()) {
     return grpc::Status(grpc::StatusCode::ALREADY_EXISTS, grpc_status_msg::KEY_EXISTS);
   }
-  
+
   // update leveldb
   this->db->Put(leveldb::WriteOptions(), request->key(), request->value());
   // update mod map
@@ -165,6 +165,3 @@ bool VolumeServer::isMyKey(const std::string& key) {
   }
   return false;
 }
-
-
-
