@@ -41,9 +41,9 @@ grpc::Status VolumeServer::Put(grpc::ServerContext* context, const PutRequest* r
   std::string hash = md5(request->key());
   uint hash_int = get_hash_uint(hash);
   uint shard_mod = hash_int % this->NUM_CHUNKS;
-  this->mod_map_mtx.lock();
+  this->mod_map_mtx[shard_mod].lock();
   this->mod_map[shard_mod].insert(request->key());
-  this->mod_map_mtx.unlock();
+  this->mod_map_mtx[shard_mod].unlock();
 
   return grpc::Status::OK;
 }
@@ -67,9 +67,9 @@ grpc::Status VolumeServer::Delete(grpc::ServerContext* context, const DeleteRequ
   std::string hash = md5(request->key());
   uint hash_int = get_hash_uint(hash);
   uint shard_mod = hash_int % this->NUM_CHUNKS;
-  this->mod_map_mtx.lock();
+  this->mod_map_mtx[shard_mod].lock();
   this->mod_map[shard_mod].erase(request->key());
-  this->mod_map_mtx.unlock();
+  this->mod_map_mtx[shard_mod].unlock();
 
   return grpc::Status::OK;
 }
@@ -148,6 +148,11 @@ void VolumeServer::fetchSMConfig() {
       }
       this->config.push_back(smce);
     }
+
+    // update to_move, needs to be consistent with config
+    this->updateToMove();
+
+    // debug
     this->printCurrentConfig();
     this->config_mtx.unlock();  // unlock
   }
@@ -164,4 +169,30 @@ bool VolumeServer::isMyKey(const std::string& key) {
     }
   }
   return false;
+}
+
+void VolumeServer::updateToMove() {
+  // updates to_move
+  this->to_move_mtx.lock();
+  for (int entry = 0; entry < (int)this->config.size(); ++entry) {
+    auto& shards = this->config[entry].shards;
+    for (int shard_idx = 0; shard_idx < (int)shards.size(); ++shard_idx) {
+      for (uint cur_shard = shards[shard_idx].lower; cur_shard <= shards[shard_idx].upper; ++cur_shard) {
+        if (this->config_num > this->to_move[cur_shard].second) {
+          // only incorporate latest moves, requests can jumble due to network latency
+          this->to_move[cur_shard] = {this->config[entry].vs_addr, this->config_num};
+
+          // register changes in move_queue
+          std::thread([this, cur_shard]() -> void {
+            this->mod_map_mtx[cur_shard].lock();
+            for (const auto& key : this->mod_map[cur_shard]) {
+              this->move_queue.enqueue(key);
+            }
+            this->mod_map_mtx[cur_shard].unlock();
+          }).detach();
+        }
+      }
+    }
+  }
+  this->to_move_mtx.unlock();
 }
