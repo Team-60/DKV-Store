@@ -18,9 +18,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Get submodules
-      run: git clone https://github.com/cameron314/concurrentqueue utils/concurrentqueue
-    
     - name: Build leveldb
       run: |
         mkdir -p $HOME/src/builds
