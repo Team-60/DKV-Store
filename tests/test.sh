@@ -1,4 +1,13 @@
 #!/bin/bash
+
+# ensure tests are built
+pushd ..
+	bash build.sh T
+popd
+echo "------------------- TESTS BUILT -------------------"
+echo
+
+# run tests
 pushd ../cmake/build
 
 RED='\033[0;31m'
