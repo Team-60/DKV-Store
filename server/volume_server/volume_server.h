@@ -18,6 +18,7 @@
 #include "shard_master.grpc.pb.h"
 #include "utils.h"
 #include "volume_server.grpc.pb.h"
+#include "thread-pool/thread_pool.hpp"
 
 using google::protobuf::Empty;
 
