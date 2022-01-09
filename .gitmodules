@@ -1,3 +1,0 @@
-[submodule "utils/concurrentqueue"]
-	path = utils/concurrentqueue
-	url = https://github.com/cameron314/concurrentqueue

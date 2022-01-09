@@ -11,7 +11,7 @@
 #include <string>
 #include <thread>
 
-#include "concurrentqueue/concurrentqueue.h"
+#include "concurrentqueue-1.0.3/concurrentqueue.h"
 #include "leveldb/db.h"
 #include "md5.h"
 #include "shard_master.grpc.pb.h"
