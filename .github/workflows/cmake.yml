@@ -18,6 +18,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Get submodules
+      run: |
+        pushd server/volume_server/concurrentqueue
+        git clone https://github.com/cameron314/concurrentqueue .
+        popd
+    
     - name: Build leveldb
       run: |
         mkdir -p $HOME/src/builds
