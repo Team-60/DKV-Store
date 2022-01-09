@@ -6,7 +6,7 @@ grpc::Status VolumeServer::Get(grpc::ServerContext* context, const GetRequest* r
   if (!isMyKey(request->key())) {
     response->set_key("");
     response->set_value("");
-    return grpc::Status(grpc::StatusCode::NOT_FOUND, "wrong volume server for key");
+    return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT, grpc_status_msg::BAD_REQUEST);
   }
 
   std::string value;
@@ -14,7 +14,7 @@ grpc::Status VolumeServer::Get(grpc::ServerContext* context, const GetRequest* r
   if (!s.ok()) {
     response->set_key("");
     response->set_value("");
-    return grpc::Status(grpc::StatusCode::NOT_FOUND, "key not found");
+    return grpc::Status(grpc::StatusCode::NOT_FOUND, grpc_status_msg::KEY_NOT_FOUND);
   }
 
   response->set_key(request->key());
@@ -26,13 +26,13 @@ grpc::Status VolumeServer::Put(grpc::ServerContext* context, const PutRequest* r
   std::cout << "VS" << this->db_idx << ") Put: key=" << request->key() << " value=" << request->value() << std::endl;
 
   if (!isMyKey(request->key())) {
-    return grpc::Status(grpc::StatusCode::NOT_FOUND, "wrong volume server for key");
+    return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT, grpc_status_msg::BAD_REQUEST);
   }
 
   std::string value;
   leveldb::Status s = this->db->Get(leveldb::ReadOptions(), request->key(), &value);
   if (s.ok()) {
-    return grpc::Status(grpc::StatusCode::ALREADY_EXISTS, "key already exists");
+    return grpc::Status(grpc::StatusCode::ALREADY_EXISTS, grpc_status_msg::KEY_EXISTS);
   }
 
   this->db->Put(leveldb::WriteOptions(), request->key(), request->value());
@@ -43,13 +43,13 @@ grpc::Status VolumeServer::Delete(grpc::ServerContext* context, const DeleteRequ
   std::cout << "VS" << this->db_idx << ") Delete: key=" << request->key() << " value=" << request->value() << std::endl;
 
   if (!isMyKey(request->key())) {
-    return grpc::Status(grpc::StatusCode::NOT_FOUND, "wrong volume server for key");
+    return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT, grpc_status_msg::BAD_REQUEST);
   }
 
   std::string value;
   leveldb::Status s = this->db->Get(leveldb::ReadOptions(), request->key(), &value);
   if (!s.ok()) {
-    return grpc::Status(grpc::StatusCode::NOT_FOUND, "key not found");
+    return grpc::Status(grpc::StatusCode::NOT_FOUND, grpc_status_msg::KEY_NOT_FOUND);
   }
 
   this->db->Delete(leveldb::WriteOptions(), request->key());
@@ -115,17 +115,15 @@ void VolumeServer::fetchSMConfig() {
       }
       this->config.push_back(smce);
     }
-    this->mtx.unlock();  // unlock
-
     this->printCurrentConfig();
+    this->mtx.unlock();  // unlock
   }
 }
 
 bool VolumeServer::isMyKey(const std::string& key) {
-
   std::string hash = md5(key);
   uint hash_int = get_hash_uint(hash);
-  uint shard_mod = hash_int % this->num_chunks;
+  uint shard_mod = hash_int % this->NUM_CHUNKS;
 
   for (SMShard& shard : my_config.shards) {
     if (shard.lower <= shard_mod && shard_mod <= shard.upper) {

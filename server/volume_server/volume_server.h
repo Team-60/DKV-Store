@@ -22,6 +22,12 @@ using google::protobuf::Empty;
 
 const std::string SHARD_MASTER_ADDR = "127.0.0.1:8080";
 
+namespace grpc_status_msg {
+  const std::string KEY_NOT_FOUND = "Key not found!";
+  const std::string KEY_EXISTS = "Key already exists!";
+  const std::string BAD_REQUEST = "Wrong volume server for key!";
+}  // namespace grpc_status_msg
+
 class VolumeServer final : public VolumeServerService::Service {
  public:
   VolumeServer(uint db_idx, std::string vs_addr, std::shared_ptr<grpc::Channel> channel) : db_idx(db_idx), vs_addr(vs_addr), sm_stub_(ShardMasterService::NewStub(channel)) {
@@ -71,7 +77,7 @@ class VolumeServer final : public VolumeServerService::Service {
   std::unique_ptr<ShardMasterService::Stub> sm_stub_;
   std::mutex mtx;  // for "config" exclusion while reading and writing
   uint config_num;
-  const uint num_chunks = 1000;
+  const uint NUM_CHUNKS = 1000; // in accordance with NUM_CHUNKS of shard-master
   std::vector<SMConfigEntry> config;
   SMConfigEntry my_config;
 
