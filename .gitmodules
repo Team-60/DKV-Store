@@ -1,3 +1,3 @@
-[submodule "server/volume_server/concurrentqueue"]
-	path = server/volume_server/concurrentqueue
+[submodule "utils/concurrentqueue"]
+	path = utils/concurrentqueue
 	url = https://github.com/cameron314/concurrentqueue
