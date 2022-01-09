@@ -33,7 +33,7 @@ jobs:
         grpc-version: 1.43.0
 
     - name: Build
-      run: bash build.sh D
+      run: bash build.sh DT
 
     - name: Test
       run: |
