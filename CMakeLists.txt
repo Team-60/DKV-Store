@@ -91,6 +91,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 set("utils_srcs" "${CMAKE_SOURCE_DIR}/utils")
 set("shard_master_srcs" "${CMAKE_SOURCE_DIR}/server/shard_master")
 set("volume_server_srcs" "${CMAKE_SOURCE_DIR}/server/volume_server")
+#set("thread_pool" "${CMAKE_SOURCE_DIR}/utils/thread-pool-2.0.0")
 
 # volume_server_grpc_proto
 add_library(volume_server_grpc_proto
@@ -137,6 +138,7 @@ target_link_libraries(volume_server
   ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(volume_server PUBLIC 
   ${utils_srcs} 
+  ${thread_pool}
   ${LEVELDB_PREFIX}/include/)
 
 # client executable
