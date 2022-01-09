@@ -34,8 +34,17 @@ grpc::Status VolumeServer::Put(grpc::ServerContext* context, const PutRequest* r
   if (s.ok()) {
     return grpc::Status(grpc::StatusCode::ALREADY_EXISTS, grpc_status_msg::KEY_EXISTS);
   }
-
+  
+  // update leveldb
   this->db->Put(leveldb::WriteOptions(), request->key(), request->value());
+  // update mod map
+  std::string hash = md5(request->key());
+  uint hash_int = get_hash_uint(hash);
+  uint shard_mod = hash_int % this->NUM_CHUNKS;
+  this->mod_map_mtx.lock();
+  this->mod_map[shard_mod].insert(request->key());
+  this->mod_map_mtx.unlock();
+
   return grpc::Status::OK;
 }
 
@@ -52,8 +61,32 @@ grpc::Status VolumeServer::Delete(grpc::ServerContext* context, const DeleteRequ
     return grpc::Status(grpc::StatusCode::NOT_FOUND, grpc_status_msg::KEY_NOT_FOUND);
   }
 
+  // update leveldb
   this->db->Delete(leveldb::WriteOptions(), request->key());
+  // update mod map
+  std::string hash = md5(request->key());
+  uint hash_int = get_hash_uint(hash);
+  uint shard_mod = hash_int % this->NUM_CHUNKS;
+  this->mod_map_mtx.lock();
+  this->mod_map[shard_mod].erase(request->key());
+  this->mod_map_mtx.unlock();
+
   return grpc::Status::OK;
+}
+
+void VolumeServer::formModMap() {
+  // forms mod map, runs before requestJoin()
+  std::cout << "VS" << this->db_idx << ") Forming mod map ..." << std::endl;
+  this->mod_map.clear();
+
+  leveldb::Iterator* it = this->db->NewIterator(leveldb::ReadOptions());
+  for (it->SeekToFirst(); it->Valid(); it->Next()) {
+    std::string key = it->key().ToString();
+    std::string hash = md5(key);
+    uint hash_int = get_hash_uint(hash);
+    uint shard_mod = hash_int % this->NUM_CHUNKS;
+    this->mod_map[shard_mod].insert(key);
+  }
 }
 
 void VolumeServer::requestJoin() {
@@ -94,7 +127,7 @@ void VolumeServer::fetchSMConfig() {
     grpc::Status status_ = this->sm_stub_->Query(&context_, request_, &new_config_response);
     assert(status.ok());
 
-    this->mtx.lock();  // lock
+    this->config_mtx.lock();  // lock
     std::cout << "VS" << this->db_idx << ") Updating config! " << this->config_num << "->" << response.config_num() << ".\n";
     // update config number
     this->config_num = response.config_num();
@@ -116,7 +149,7 @@ void VolumeServer::fetchSMConfig() {
       this->config.push_back(smce);
     }
     this->printCurrentConfig();
-    this->mtx.unlock();  // unlock
+    this->config_mtx.unlock();  // unlock
   }
 }
 

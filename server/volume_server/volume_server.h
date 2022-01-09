@@ -9,12 +9,16 @@
 #include <sstream>
 #include <string>
 #include <thread>
+#include <map>
+#include <set>
 
 #include "leveldb/db.h"
 #include "shard_master.grpc.pb.h"
 #include "utils.h"
 #include "md5.h"
 #include "volume_server.grpc.pb.h"
+
+#include "concurrentqueue/concurrentqueue.h"
 
 using google::protobuf::Empty;
 
@@ -43,6 +47,9 @@ class VolumeServer final : public VolumeServerService::Service {
     leveldb::Status status = leveldb::DB::Open(options, this->db_name, &this->db);
     assert(status.ok());
 
+    // form mod_map
+    this->formModMap();
+
     // ask shard-master to join
     this->requestJoin();
 
@@ -64,22 +71,26 @@ class VolumeServer final : public VolumeServerService::Service {
   grpc::Status Delete(grpc::ServerContext* context, const DeleteRequest* request, Empty* response) override;
 
  private:
-
-  void requestJoin();
-  void fetchSMConfig();
-  bool isMyKey(const std::string& key);
-
   uint db_idx;
   std::string vs_addr;
   std::string db_name;
   leveldb::DB* db;
   // data members for volume server config (fetched from SM)
   std::unique_ptr<ShardMasterService::Stub> sm_stub_;
-  std::mutex mtx;  // for "config" exclusion while reading and writing
+  std::mutex config_mtx;  // for "config" exclusion while reading and writing
   uint config_num;
   const uint NUM_CHUNKS = 1000; // in accordance with NUM_CHUNKS of shard-master
   std::vector<SMConfigEntry> config;
   SMConfigEntry my_config;
+  // data members for move utils
+  std::map<uint, std::set<std::string>> mod_map; // maps shards to respective keys, IMP keep it consistent with leveldb
+  std::mutex mod_map_mtx;
+  moodycamel::ConcurrentQueue<std::string> move_queue;
+
+  void formModMap();
+  void requestJoin();
+  void fetchSMConfig();
+  bool isMyKey(const std::string& key);
 
   void printCurrentConfig() {
     std::cout << "VS" << this->db_idx << ") Current config\n";
