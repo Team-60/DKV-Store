@@ -27,7 +27,7 @@ void start_simple_shardkvs(const Addrs& addrs) {
 }
 
 void start_simple_shardkv(const std::string& addr, const uint db_idx) {
-  // This address doesn't matter
+  // shardmaster address is same for all simple spwaned shard servers
   std::string shardmaster_addr = "127.0.0.1:8080";
   spawn_service_in_thread<VolumeServer, const uint&, const std::string&, 
                           const std::shared_ptr<grpc::Channel>>(addr, db_idx, addr, grpc::CreateChannel(shardmaster_addr, grpc::InsecureChannelCredentials()));

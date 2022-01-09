@@ -120,11 +120,11 @@ target_link_libraries(shard_master
   shard_master_grpc_proto
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF}
-  ${CMAKE_CURRENT_SOURCE_DIR}/.srcs/leveldb/build/libleveldb.a
+  ${LEVELDB_PREFIX}/build/libleveldb.a
   ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(shard_master PUBLIC 
-  ${CMAKE_CURRENT_SOURCE_DIR}/.srcs/leveldb/include/
-  ${utils_srcs})
+  ${utils_srcs}
+  ${LEVELDB_PREFIX}/include/)
 
 # add executable volume_server.cc
 add_executable(volume_server "server/volume_server/main.cc" ${utils_srcs}/md5.cc)
@@ -133,14 +133,14 @@ target_link_libraries(volume_server
   volume_server_grpc_proto
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF}
-  ${CMAKE_CURRENT_SOURCE_DIR}/.srcs/leveldb/build/libleveldb.a
+  ${LEVELDB_PREFIX}/build/libleveldb.a
   ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(volume_server PUBLIC 
-  ${CMAKE_CURRENT_SOURCE_DIR}/.srcs/leveldb/include/
-  ${utils_srcs})
+  ${utils_srcs} 
+  ${LEVELDB_PREFIX}/include/)
 
 # client executable
-add_executable(client "client/client.cc")
+add_executable(client "client/client.cc" ${utils_srcs}/md5.cc)
 target_link_libraries(client
   shard_master_grpc_proto
   volume_server_grpc_proto
@@ -148,28 +148,30 @@ target_link_libraries(client
   ${_PROTOBUF_LIBPROTOBUF})
 target_include_directories(client PUBLIC ${utils_srcs})
 
-file(GLOB TEST_SOURCES tests/*/*.cc)
-foreach(testsourcefile ${TEST_SOURCES})
-  get_filename_component(testname ${testsourcefile} NAME_WE)
-  add_executable(${testname} ${testsourcefile}
-    ${shard_master_proto_srcs}
-    ${shard_master_grpc_srcs}
-    ${volume_server_proto_srcs}
-    ${volume_server_grpc_srcs}
-    "server/shard_master/shard_master.cc"
-    "server/volume_server/volume_server.cc"
-    ${utils_srcs}/md5.cc
-    test_utils/test_utils.cc test_utils/test_utils.h)
-  target_link_libraries(${testname}
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF}
-    ${CMAKE_CURRENT_SOURCE_DIR}/.srcs/leveldb/build/libleveldb.a
-    ${CMAKE_THREAD_LIBS_INIT})
-  target_include_directories(${testname} PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR}/.srcs/leveldb/include/
-    ${utils_srcs}
-    ${shard_master_srcs}
-    ${volume_server_srcs})
-endforeach(testsourcefile ${TEST_SOURCES})
-
-add_custom_target(check ./test.sh)
+# tests
+if(BUILD_TESTS)
+  file(GLOB TEST_SOURCES tests/*/*.cc)
+  foreach(testsourcefile ${TEST_SOURCES})
+    get_filename_component(testname ${testsourcefile} NAME_WE)
+    add_executable(${testname} ${testsourcefile}
+      ${shard_master_proto_srcs}
+      ${shard_master_grpc_srcs}
+      ${volume_server_proto_srcs}
+      ${volume_server_grpc_srcs}
+      ${utils_srcs}/md5.cc
+      "server/shard_master/shard_master.cc"
+      "server/volume_server/volume_server.cc"
+      test_utils/test_utils.cc test_utils/test_utils.h)
+    target_link_libraries(${testname}
+      ${_GRPC_GRPCPP}
+      ${_PROTOBUF_LIBPROTOBUF}
+      ${LEVELDB_PREFIX}/build/libleveldb.a
+      ${CMAKE_THREAD_LIBS_INIT})
+    target_include_directories(${testname} PUBLIC 
+      ${LEVELDB_PREFIX}/include/
+      ${utils_srcs}
+      ${shard_master_srcs}
+      ${volume_server_srcs})
+  endforeach(testsourcefile ${TEST_SOURCES})
+  add_custom_target(check ./test.sh)
+endif(BUILD_TESTS)

@@ -2,7 +2,7 @@
 
 #include <map>
 
-#include "md5.cc"
+#include "md5.h"
 #include "shard_master.grpc.pb.h"
 #include "utils.h"
 #include "volume_server.grpc.pb.h"

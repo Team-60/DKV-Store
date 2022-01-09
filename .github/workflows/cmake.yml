@@ -2,9 +2,9 @@ name: CMake
 
 on:
   push:
-    branches: [ fix-workflows ]
+    branches: [ main ]
   pull_request:
-    branches: [ fix-workflows ]
+    branches: [ main ]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -18,23 +18,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Build leveldb
+      run: |
+        mkdir -p $HOME/src/builds
+        pushd $HOME/src/builds
+        git clone --recurse-submodules https://github.com/google/leveldb.git
+        mkdir -p leveldb/build && cd leveldb/build
+        cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
+        popd
+
     - uses: actions/checkout@v2
     - uses: eWaterCycle/setup-grpc@v4
       with:
         grpc-version: 1.43.0
 
     - name: Build
-      run: |
-        # Create build directory
-        rm -rf cmake
-        mkdir -p cmake/build
-        pushd cmake/build
-        cmake ../..
-        make
-        popd
-      
+      run: bash build.sh DT
+
     - name: Test
-      run: bash tests/test.sh
-        
-      
-      
+      run: |
+        pushd tests
+        bash test.sh
+        popd
