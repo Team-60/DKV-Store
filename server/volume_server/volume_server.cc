@@ -194,7 +194,11 @@ bool VolumeServer::isMyKey(const std::string& key) {
 void VolumeServer::updateToMove(const std::vector<std::pair<uint, std::string>>& removed) {
   // updates to_move
   this->to_move_mtx.lock();
-  for (const auto& [cur_shard, vs_addr] : removed) {
+
+  for (const auto& removed_info : removed) {
+    const uint& cur_shard = removed_info.first;
+    const std::string& vs_addr = removed_info.second;
+
     if (this->config_num > this->to_move[cur_shard].second) {
       // only incorporate latest moves, requests can jumble due to network latency
       this->to_move[cur_shard] = {vs_addr, this->config_num};
