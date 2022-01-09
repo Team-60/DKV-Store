@@ -5,7 +5,6 @@
 
 #include <chrono>
 #include <iostream>
-#include <map>
 #include <mutex>
 #include <set>
 #include <sstream>
@@ -50,11 +49,13 @@ class VolumeServer final : public VolumeServerService::Service {
     // ask shard-master to join
     this->requestJoin();
 
-    // form mod_map
-    this->formModMap();
-
     // initialize to_move
     this->to_move.resize(this->NUM_CHUNKS, {"", 0});
+
+    // initialize & form mod_map
+    this->mod_map.resize(this->NUM_CHUNKS);
+    this->mod_map_mtx.resize(this->NUM_CHUNKS);
+    this->formModMap();
 
     // setup ticks
     std::thread([&]() -> void {
@@ -86,8 +87,8 @@ class VolumeServer final : public VolumeServerService::Service {
   std::vector<SMConfigEntry> config;
   SMConfigEntry my_config;
   // data members for move utils
-  std::map<uint, std::set<std::string>> mod_map;  // maps shards to respective keys, IMP keep it consistent with leveldb
-  std::map<uint, std::mutex> mod_map_mtx;
+  std::vector<std::set<std::string>> mod_map;  // maps shards to respective keys, IMP keep it consistent with leveldb
+  std::vector<std::unique_ptr<std::mutex>> mod_map_mtx;
   moodycamel::ConcurrentQueue<std::string> move_queue;  // to read puts
   std::vector<std::pair<std::string, uint>> to_move;    // maps ith shard to vs_addr w/ config_num
   std::mutex to_move_mtx;
