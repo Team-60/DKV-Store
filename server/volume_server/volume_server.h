@@ -16,9 +16,9 @@
 #include "leveldb/db.h"
 #include "md5.h"
 #include "shard_master.grpc.pb.h"
+#include "thread-pool/thread_pool.hpp"
 #include "utils.h"
 #include "volume_server.grpc.pb.h"
-#include "thread-pool/thread_pool.hpp"
 
 using google::protobuf::Empty;
 
@@ -89,14 +89,15 @@ class VolumeServer final : public VolumeServerService::Service {
   std::map<uint, std::set<std::string>> mod_map;  // maps shards to respective keys, IMP keep it consistent with leveldb
   std::map<uint, std::mutex> mod_map_mtx;
   moodycamel::ConcurrentQueue<std::string> move_queue;  // to read puts
-  std::vector<std::pair<std::string, uint>> to_move;     // maps ith shard to vs_addr w/ config_num
+  std::vector<std::pair<std::string, uint>> to_move;    // maps ith shard to vs_addr w/ config_num
   std::mutex to_move_mtx;
 
   void formModMap();
   void requestJoin();
   void fetchSMConfig();
   bool isMyKey(const std::string& key);
-  void updateToMove();
+  void updateToMove(const std::vector<std::pair<uint, std::string>>& removed);
+  std::vector<std::pair<uint, std::string>> calcNegativeDiff(const SMConfigEntry& smce);
 
   void printCurrentConfig() {
     std::cout << "VS" << this->db_idx << ") Current config\n";
