@@ -92,12 +92,14 @@ class VolumeServer final : public VolumeServerService::Service {
   moodycamel::ConcurrentQueue<std::string> move_queue;  // to read puts
   std::vector<std::pair<std::string, uint>> to_move;    // maps ith shard to vs_addr w/ config_num
   std::mutex to_move_mtx;
+  thread_pool tpool;
 
   void formModMap();
   void requestJoin();
   void fetchSMConfig();
   bool isMyKey(const std::string& key);
   void updateToMove(const std::vector<std::pair<uint, std::string>>& removed);
+  void moveKeys();
   std::vector<std::pair<uint, std::string>> calcNegativeDiff(const SMConfigEntry& smce);
 
   void printCurrentConfig() {

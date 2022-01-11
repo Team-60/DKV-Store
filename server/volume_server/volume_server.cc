@@ -213,3 +213,54 @@ void VolumeServer::updateToMove(const std::vector<std::pair<uint, std::string>>&
   }
   this->to_move_mtx.unlock();
 }
+
+
+void VolumeServer::moveKeys() {
+
+  while (true) {
+
+    std::string key;
+    bool status = move_queue.try_dequeue(key);
+
+    // empty queue
+    if (!status) continue;
+
+    std::string hash = md5(key);
+    uint hash_int = get_hash_uint(hash);
+    uint shard_mod = hash_int % this->NUM_CHUNKS;
+
+    std::string value;
+    leveldb::Status s = this->db->Get(leveldb::ReadOptions(), key, &value);
+    if (!s.ok()) {
+      std::cerr << "Error : moveKeys -> no such key to move / or key already moved" << std::endl;
+      continue;
+    }
+
+    std::string vs_addr = to_move[shard_mod].first;
+
+    tpool.push_task([this, vs_addr, key, value, shard_mod]() {
+      auto channel = grpc::CreateChannel(vs_addr, grpc::InsecureChannelCredentials());
+      auto stub = VolumeServerService::NewStub(channel);
+
+      ::grpc::ClientContext clientContext;
+      PutRequest request;
+      Empty response;
+      request.set_key(key);
+      request.set_value(value);
+
+      auto status = stub->Put(&clientContext, request, &response);
+
+      if (status.ok()) {
+        // move success
+        // delete key from current server
+        // update leveldb
+        this->db->Delete(leveldb::WriteOptions(), request.key());
+        // update mod map
+        this->mod_map_mtx[shard_mod]->lock();
+        this->mod_map[shard_mod].erase(request.key());
+        this->mod_map_mtx[shard_mod]->unlock();
+      }
+    });
+
+  }
+}
