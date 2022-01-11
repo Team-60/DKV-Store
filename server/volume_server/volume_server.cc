@@ -41,9 +41,9 @@ grpc::Status VolumeServer::Put(grpc::ServerContext* context, const PutRequest* r
   std::string hash = md5(request->key());
   uint hash_int = get_hash_uint(hash);
   uint shard_mod = hash_int % this->NUM_CHUNKS;
-  this->mod_map_mtx[shard_mod]->lock();
+  this->mod_map_mtx[shard_mod].lock();
   this->mod_map[shard_mod].insert(request->key());
-  this->mod_map_mtx[shard_mod]->unlock();
+  this->mod_map_mtx[shard_mod].unlock();
 
   return grpc::Status::OK;
 }
@@ -67,9 +67,9 @@ grpc::Status VolumeServer::Delete(grpc::ServerContext* context, const DeleteRequ
   std::string hash = md5(request->key());
   uint hash_int = get_hash_uint(hash);
   uint shard_mod = hash_int % this->NUM_CHUNKS;
-  this->mod_map_mtx[shard_mod]->lock();
+  this->mod_map_mtx[shard_mod].lock();
   this->mod_map[shard_mod].erase(request->key());
-  this->mod_map_mtx[shard_mod]->unlock();
+  this->mod_map_mtx[shard_mod].unlock();
 
   return grpc::Status::OK;
 }
@@ -194,21 +194,18 @@ bool VolumeServer::isMyKey(const std::string& key) {
 void VolumeServer::updateToMove(const std::vector<std::pair<uint, std::string>>& removed) {
   // updates to_move
   this->to_move_mtx.lock();
-
   for (const auto& removed_info : removed) {
     const uint& cur_shard = removed_info.first;
     const std::string& vs_addr = removed_info.second;
-
     if (this->config_num > this->to_move[cur_shard].second) {
       // only incorporate latest moves, requests can jumble due to network latency
       this->to_move[cur_shard] = {vs_addr, this->config_num};
-
       // register changes in move_queue
-      this->mod_map_mtx[cur_shard]->lock();
+      this->mod_map_mtx[cur_shard].lock();
       for (const auto& key : this->mod_map[cur_shard]) {
         this->move_queue.enqueue(key);
       }
-      this->mod_map_mtx[cur_shard]->unlock();
+      this->mod_map_mtx[cur_shard].unlock();
     }
   }
   this->to_move_mtx.unlock();

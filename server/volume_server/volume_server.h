@@ -54,7 +54,6 @@ class VolumeServer final : public VolumeServerService::Service {
 
     // initialize & form mod_map
     this->mod_map.resize(this->NUM_CHUNKS);
-    this->mod_map_mtx.resize(this->NUM_CHUNKS);
     this->formModMap();
 
     // setup ticks
@@ -83,12 +82,12 @@ class VolumeServer final : public VolumeServerService::Service {
   std::unique_ptr<ShardMasterService::Stub> sm_stub_;
   std::mutex config_mtx;  // for "config" exclusion while reading and writing
   uint config_num;
-  const uint NUM_CHUNKS = 1000;  // in accordance with NUM_CHUNKS of shard-master
+  const static uint NUM_CHUNKS = 1000;  // in accordance with NUM_CHUNKS of shard-master
   std::vector<SMConfigEntry> config;
   SMConfigEntry my_config;
   // data members for move utils
   std::vector<std::set<std::string>> mod_map;  // maps shards to respective keys, IMP keep it consistent with leveldb
-  std::vector<std::unique_ptr<std::mutex>> mod_map_mtx;
+  std::array<std::mutex, NUM_CHUNKS> mod_map_mtx;
   moodycamel::ConcurrentQueue<std::string> move_queue;  // to read puts
   std::vector<std::pair<std::string, uint>> to_move;    // maps ith shard to vs_addr w/ config_num
   std::mutex to_move_mtx;
