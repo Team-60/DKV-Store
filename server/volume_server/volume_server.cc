@@ -217,7 +217,7 @@ void VolumeServer::moveKeys() {
   while (true) {
 
     std::string key;
-    bool status = move_queue.try_dequeue(key);
+    bool status = this->move_queue.try_dequeue(key);
 
     // empty queue
     if (!status) continue;
@@ -253,9 +253,11 @@ void VolumeServer::moveKeys() {
         // update leveldb
         this->db->Delete(leveldb::WriteOptions(), request.key());
         // update mod map
-        this->mod_map_mtx[shard_mod]->lock();
+        this->mod_map_mtx[shard_mod].lock();
         this->mod_map[shard_mod].erase(request.key());
-        this->mod_map_mtx[shard_mod]->unlock();
+        this->mod_map_mtx[shard_mod].unlock();
+      }else {
+        this->move_queue.enqueue(key);
       }
     });
 
