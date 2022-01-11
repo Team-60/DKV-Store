@@ -50,10 +50,10 @@ class VolumeServer final : public VolumeServerService::Service {
     this->requestJoin();
 
     // initialize to_move
-    this->to_move.resize(this->NUM_CHUNKS, {"", 0});
+    this->to_move.resize(this->NUM_CHUNKS + 1, {"", 0});
 
     // initialize & form mod_map
-    this->mod_map.resize(this->NUM_CHUNKS);
+    this->mod_map.resize(this->NUM_CHUNKS + 1);
     this->formModMap();
 
     // setup ticks
@@ -63,6 +63,11 @@ class VolumeServer final : public VolumeServerService::Service {
         std::this_thread::sleep_for(std::chrono::milliseconds(TICK_INTERVAL));
       }
     }).detach();
+
+    std::thread([this]() -> void {
+        this->moveKeys();
+    }).detach();
+
   }
 
   ~VolumeServer() { delete this->db; }
@@ -87,7 +92,7 @@ class VolumeServer final : public VolumeServerService::Service {
   SMConfigEntry my_config;
   // data members for move utils
   std::vector<std::set<std::string>> mod_map;  // maps shards to respective keys, IMP keep it consistent with leveldb
-  std::array<std::mutex, NUM_CHUNKS> mod_map_mtx;
+  std::array<std::mutex, NUM_CHUNKS + 1> mod_map_mtx;
   moodycamel::ConcurrentQueue<std::string> move_queue;  // to read puts
   std::vector<std::pair<std::string, uint>> to_move;    // maps ith shard to vs_addr w/ config_num
   std::mutex to_move_mtx;

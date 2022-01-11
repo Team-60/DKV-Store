@@ -106,15 +106,23 @@ void VolumeServer::requestJoin() {
   }
 }
 
-std::vector<std::pair<uint, std::string>> VolumeServer::calcNegativeDiff(const SMConfigEntry& smce) {
+std::vector<std::pair<uint, std::string>> VolumeServer::calcNegativeDiff(const SMConfigEntry& my_prev_config) {
   // TODO: look for return value optimizations
   std::vector<std::pair<uint, std::string>> removed;
-  for (const SMShard& my_shard : this->my_config.shards) {
-    for (uint shard_num = my_shard.lower; shard_num <= my_shard.upper; ++shard_num) {
-      // check if exists in smce
-      for (const SMShard& smce_shard : smce.shards) {
-        if (shard_num < smce_shard.lower || shard_num > smce_shard.upper) {
-          removed.emplace_back(shard_num, smce.vs_addr);
+  for (SMConfigEntry& configEntry : this->config) {
+    if (configEntry.vs_addr == my_prev_config.vs_addr) {
+      // not in diff
+      continue;
+    }
+
+    for (const SMShard& shard : configEntry.shards) {
+      for (uint shard_num = shard.lower; shard_num <= shard.upper; ++shard_num) {
+        // check if exists in my_prev_config
+        for (const SMShard& my_prev_shard : my_prev_config.shards) {
+          if (shard_num >= my_prev_shard.lower && shard_num <= my_prev_shard.upper) {
+            // A shard that is moved
+            removed.emplace_back(shard_num, configEntry.vs_addr);
+          }
         }
       }
     }
@@ -148,9 +156,13 @@ void VolumeServer::fetchSMConfig() {
     std::cout << "VS" << this->db_idx << ") Updating config! " << this->config_num << "->" << response.config_num() << ".\n";
     // update config number
     this->config_num = response.config_num();
+    this->config_mtx.unlock();  // unlock
+
     // update config
     this->config.clear();
     auto new_config = new_config_response.config();
+
+    SMConfigEntry my_prev_config = my_config;
     for (int entry = 0; entry < new_config.size(); ++entry) {
       SMConfigEntry smce;
       smce.vs_addr = new_config[entry].server_addr();
@@ -161,20 +173,20 @@ void VolumeServer::fetchSMConfig() {
         smce.shards.push_back(nshard);
       }
       if (this->vs_addr == smce.vs_addr) {
-        // calc diff
-        removed = this->calcNegativeDiff(smce);
         // then assign
-        this->my_config = smce;
+        my_config = smce;
       }
       this->config.push_back(smce);
     }
+
+    // calc diff
+    removed = this->calcNegativeDiff(my_prev_config);
 
     // update to_move, needs to be consistent with config
     this->updateToMove(removed);
 
     // debug
     this->printCurrentConfig();
-    this->config_mtx.unlock();  // unlock
   }
 }
 
@@ -194,6 +206,7 @@ bool VolumeServer::isMyKey(const std::string& key) {
 void VolumeServer::updateToMove(const std::vector<std::pair<uint, std::string>>& removed) {
   // updates to_move
   this->to_move_mtx.lock();
+  int cnt = 0;
   for (const auto& removed_info : removed) {
     const uint& cur_shard = removed_info.first;
     const std::string& vs_addr = removed_info.second;
@@ -221,7 +234,6 @@ void VolumeServer::moveKeys() {
 
     // empty queue
     if (!status) continue;
-
     std::string hash = md5(key);
     uint hash_int = get_hash_uint(hash);
     uint shard_mod = hash_int % this->NUM_CHUNKS;
@@ -244,6 +256,7 @@ void VolumeServer::moveKeys() {
       Empty response;
       request.set_key(key);
       request.set_value(value);
+      std::cout << "Moving " << key << " with value " << value << " to " << vs_addr << std::endl;
 
       auto status = stub->Put(&clientContext, request, &response);
 
