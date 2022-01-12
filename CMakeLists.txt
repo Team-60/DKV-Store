@@ -89,9 +89,9 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 # utils
 set("utils_srcs" "${CMAKE_SOURCE_DIR}/utils")
-set("md5" "${CMAKE_SOURCE_DIR}/md5")
 set("shard_master_srcs" "${CMAKE_SOURCE_DIR}/server/shard_master")
 set("volume_server_srcs" "${CMAKE_SOURCE_DIR}/server/volume_server")
+#set("thread_pool" "${CMAKE_SOURCE_DIR}/utils/thread-pool-2.0.0")
 
 # volume_server_grpc_proto
 add_library(volume_server_grpc_proto
@@ -124,13 +124,11 @@ target_link_libraries(shard_master
   ${LEVELDB_PREFIX}/build/libleveldb.a
   ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(shard_master PUBLIC 
-  ${LEVELDB_PREFIX}/include/)
-target_include_directories(shard_master PUBLIC 
   ${utils_srcs}
   ${LEVELDB_PREFIX}/include/)
 
 # add executable volume_server.cc
-add_executable(volume_server "server/volume_server/main.cc")
+add_executable(volume_server "server/volume_server/main.cc" ${utils_srcs}/md5.cc)
 target_link_libraries(volume_server
   shard_master_grpc_proto
   volume_server_grpc_proto
@@ -140,10 +138,11 @@ target_link_libraries(volume_server
   ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(volume_server PUBLIC 
   ${utils_srcs} 
+  ${thread_pool}
   ${LEVELDB_PREFIX}/include/)
 
 # client executable
-add_executable(client "client/client.cc")
+add_executable(client "client/client.cc" ${utils_srcs}/md5.cc)
 target_link_libraries(client
   shard_master_grpc_proto
   volume_server_grpc_proto
@@ -161,6 +160,7 @@ if(BUILD_TESTS)
       ${shard_master_grpc_srcs}
       ${volume_server_proto_srcs}
       ${volume_server_grpc_srcs}
+      ${utils_srcs}/md5.cc
       "server/shard_master/shard_master.cc"
       "server/volume_server/volume_server.cc"
       test_utils/test_utils.cc test_utils/test_utils.h)

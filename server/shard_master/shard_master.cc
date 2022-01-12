@@ -30,7 +30,7 @@ grpc::Status ShardMaster::Move(grpc::ServerContext* context, const MoveRequest* 
   std::cout << "* Shardmaster: Move called - " << this->config_num << std::endl;
 
   bool serverExists = false;
-  for (SMConfigEntry& config: this->sm_config) {
+  for (SMConfigEntry& config : this->sm_config) {
     if (config.vs_addr == request->server()) {
       serverExists = true;
       break;
@@ -74,7 +74,7 @@ grpc::Status ShardMaster::Join(grpc::ServerContext* context, const JoinRequest* 
   std::cout << "* Shardmaster: Join called - " << this->config_num << "; vs_addr: " << request->server_addr() << std::endl;
 
   // check if already exists
-  for (SMConfigEntry& config: this->sm_config) {
+  for (SMConfigEntry& config : this->sm_config) {
     if (config.vs_addr == request->server_addr()) {
       return grpc::Status(grpc::StatusCode::ALREADY_EXISTS, "server already exists");
     }
@@ -108,7 +108,7 @@ grpc::Status ShardMaster::Leave(grpc::ServerContext* context, const LeaveRequest
 
   if (serverExists) {
     this->redistributeChunks();
-  }else {
+  } else {
     return grpc::Status(grpc::StatusCode::NOT_FOUND, "server not found");
   }
 

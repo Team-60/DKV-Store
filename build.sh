@@ -1,10 +1,9 @@
 ## flag "D" provided -> rebuild
 if [[ $* == *D* ]]; then echo "* Rebuilding..." && rm -rf cmake; fi
 ## flag "F" provided -> auto format
-EXCLUDE_FOLDER=./cmake
 if [[ $* == *F* ]]; then 
 	echo "* Formatting Project..."
-	find . \( -name "*.h" -or -name "*.cc" \) -not -path "${EXCLUDE_FOLDER}" \
+	find . \( -name "*.h" -or -name "*.cc" \) ! -path "./cmake/*" ! -path "./utils/concurrentqueue-1.0.3/*" \
 		-exec clang-format -i -style=file {} \; \
 		-exec echo "- formatting " {} \;
 fi

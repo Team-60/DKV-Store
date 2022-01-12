@@ -55,4 +55,4 @@ class ShardMaster final : public ShardMasterService::Service {
   void redistributeChunks();
 };
 
-#endif //SHARD_MASTER
+#endif  //SHARD_MASTER

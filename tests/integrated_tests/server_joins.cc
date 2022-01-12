@@ -1,4 +1,5 @@
 #include <unistd.h>
+
 #include <cassert>
 #include <map>
 #include <optional>
@@ -6,6 +7,8 @@
 #include <vector>
 
 #include "../../test_utils/test_utils.h"
+#include "md5.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -30,9 +33,9 @@ int main() {
   std::this_thread::sleep_for(timespan);
 
   assert(test_put(skv_1, 600, "hi", true));
-  assert(test_put(skv_1, 200, "hello", true));
+  assert(test_put(skv_1, 100, "hello", true));
   assert(test_get(skv_1, 600, "hi"));
-  assert(test_get(skv_1, 200, "hello"));
+  assert(test_get(skv_1, 100, "hello"));
 
   // now when a new server joins, "hi" should move to it while "hello" stays
   start_shardkv(skv_2, 2, shardmaster_addr);
@@ -41,11 +44,11 @@ int main() {
   assert(test_query(shardmaster_addr, m));
   m.clear();
 
-
+  // as hash of 600 >= 500, and hash of 100 < 500
   // wait for the key to transfer
   std::this_thread::sleep_for(timespan);
   //key should now be gone from skv_1 and on skv_2
   assert(test_get(skv_1, 600, nullopt));
-  assert(test_get(skv_1, 200, "hello"));
+  assert(test_get(skv_1, 100, "hello"));
   assert(test_get(skv_2, 600, "hi"));
 }

@@ -2,14 +2,16 @@
 #define SHARDING_TEST_UTILS_H
 
 #include <grpcpp/grpcpp.h>
-#include <unistd.h>
+#include <signal.h>
 #include <sys/wait.h>
+#include <unistd.h>
+
 #include <cassert>
 #include <optional>
 #include <string>
 #include <thread>
 #include <vector>
-#include <signal.h>
+
 #include "utils.h"
 
 using Addrs = std::vector<std::string>;
