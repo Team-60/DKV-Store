@@ -107,14 +107,11 @@ void VolumeServer::requestJoin() {
 }
 
 std::vector<std::pair<uint, std::string>> VolumeServer::calcNegativeDiff(const SMConfigEntry& my_prev_config) {
-  // TODO: look for return value optimizations
   std::vector<std::pair<uint, std::string>> removed;
   for (SMConfigEntry& configEntry : this->config) {
-    if (configEntry.vs_addr == my_prev_config.vs_addr) {
-      // not in diff
+    if (configEntry.vs_addr == my_prev_config.vs_addr) {  // not in diff
       continue;
     }
-
     for (const SMShard& shard : configEntry.shards) {
       for (uint shard_num = shard.lower; shard_num <= shard.upper; ++shard_num) {
         // check if exists in my_prev_config
@@ -206,7 +203,6 @@ bool VolumeServer::isMyKey(const std::string& key) {
 void VolumeServer::updateToMove(const std::vector<std::pair<uint, std::string>>& removed) {
   // updates to_move
   this->to_move_mtx.lock();
-  int cnt = 0;
   for (const auto& removed_info : removed) {
     const uint& cur_shard = removed_info.first;
     const std::string& vs_addr = removed_info.second;
@@ -224,11 +220,9 @@ void VolumeServer::updateToMove(const std::vector<std::pair<uint, std::string>>&
   this->to_move_mtx.unlock();
 }
 
-
 void VolumeServer::moveKeys() {
-
+  // reads the moves queue and moves the required keys through gRPC
   while (true) {
-
     std::string key;
     bool status = this->move_queue.try_dequeue(key);
 
@@ -245,9 +239,12 @@ void VolumeServer::moveKeys() {
       continue;
     }
 
-    std::string vs_addr = to_move[shard_mod].first;
+    // string read is not atomic & vector can be altered
+    this->to_move_mtx.lock();
+    std::string vs_addr = this->to_move[shard_mod].first;
+    this->to_move_mtx.unlock();
 
-    tpool.push_task([this, vs_addr, key, value, shard_mod]() {
+    tpool.push_task([this, vs_addr, key, value, shard_mod]() -> void {
       auto channel = grpc::CreateChannel(vs_addr, grpc::InsecureChannelCredentials());
       auto stub = VolumeServerService::NewStub(channel);
 
@@ -256,7 +253,7 @@ void VolumeServer::moveKeys() {
       Empty response;
       request.set_key(key);
       request.set_value(value);
-      std::cout << "Moving " << key << " with value " << value << " to " << vs_addr << std::endl;
+      std::cout << "VS" << this->db_idx << ") Moving " << key << " with value " << value << " to " << vs_addr << std::endl;
 
       auto status = stub->Put(&clientContext, request, &response);
 
@@ -269,10 +266,9 @@ void VolumeServer::moveKeys() {
         this->mod_map_mtx[shard_mod].lock();
         this->mod_map[shard_mod].erase(request.key());
         this->mod_map_mtx[shard_mod].unlock();
-      }else {
+      } else {
         this->move_queue.enqueue(key);
       }
     });
-
   }
 }

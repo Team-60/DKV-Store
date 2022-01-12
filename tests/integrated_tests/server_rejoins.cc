@@ -7,9 +7,8 @@
 #include <vector>
 
 #include "../../test_utils/test_utils.h"
-
-#include "utils.h"
 #include "md5.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -21,9 +20,9 @@ vector<int> getKeys() {
     uint shard_mod = hash_int % 1000;
     if (shard_mod >= 0 && shard_mod < 500 && keys[0] != -1) {
       keys[0] = i;
-    }else if (shard_mod < 500) {
+    } else if (shard_mod < 500) {
       keys[1] = i;
-    }else {
+    } else {
       keys[2] = i;
     }
   }

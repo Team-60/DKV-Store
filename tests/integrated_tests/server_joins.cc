@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "../../test_utils/test_utils.h"
-#include "utils.h"
 #include "md5.h"
+#include "utils.h"
 
 using namespace std;
 

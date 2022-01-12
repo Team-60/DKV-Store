@@ -57,17 +57,17 @@ class VolumeServer final : public VolumeServerService::Service {
     this->formModMap();
 
     // setup ticks
-    std::thread([&]() -> void {
-      while (1) {
+    std::thread([this]() -> void {
+      while (true) {
         this->fetchSMConfig();
         std::this_thread::sleep_for(std::chrono::milliseconds(TICK_INTERVAL));
       }
     }).detach();
 
+    // setup move keys
     std::thread([this]() -> void {
-        this->moveKeys();
+      this->moveKeys();
     }).detach();
-
   }
 
   ~VolumeServer() { delete this->db; }
