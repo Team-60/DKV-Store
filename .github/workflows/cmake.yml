@@ -2,9 +2,9 @@ name: CMake
 
 on:
   push:
-    branches: [ move-volume-keys ]
+    branches: [ main ]
   pull_request:
-    branches: [ move-volume-keys ]
+    branches: [ main ]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
