@@ -4,7 +4,7 @@
 **An on-disk, high-performant & consistent distributed key value store in C++**
 
 ## Components
-  - Shard master: Redirect a request to Volume server
+  - Shard master: share/update distribution of keys between volume servers
   - Volume server: Database storing key-value pairs
 
 ## Tools & Libraries used
