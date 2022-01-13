@@ -101,7 +101,7 @@ class Client {
     Empty request;
     QueryConfigNumResponse response;
     grpc::ClientContext context;
-    grpc::Status status = sm_stub_->QueryConfigNum(&context, request, &response);
+    grpc::Status status = this->sm_stub_->QueryConfigNum(&context, request, &response);
     if (!status.ok()) {
       std::cout << status.error_code() << ": " << status.error_message() << std::endl;
       return query_status::RPC_FAIL;
@@ -122,6 +122,25 @@ class Client {
       std::cout << "* Client: Updating config! " << this->config_num << "->" << response.config_num() << std::endl;
       this->config_num = response.config_num();
       this->printMappings();
+    }
+
+    return query_status::OK;
+  }
+
+  // shard-master
+  std::string Move(const std::pair<uint, uint>& shard, const std::string& vs_addr) {
+    MoveRequest request;
+    request.set_server(vs_addr);
+    Shard* req_shard = request.mutable_shard();
+    req_shard->set_lower(shard.first);
+    req_shard->set_upper(shard.second);
+
+    Empty response;
+    grpc::ClientContext context;
+    grpc::Status status = sm_stub_->Move(&context, request, &response);
+    if (!status.ok()) {
+      std::cout << status.error_code() << ": " << status.error_message() << std::endl;
+      return query_status::RPC_FAIL;
     }
 
     return query_status::OK;
@@ -214,6 +233,10 @@ int main(int argc, char* argv[]) {
   // key not found
   std::cout << "Response:-\n"
             << client.Get("key2") << '\n'
+            << std::endl;
+  // try move key
+  std::cout << "Response:-\n"
+            << client.Move({0, 400}, "127.0.0.1:8081") << '\n'
             << std::endl;
 
   std::cout << std::endl;
