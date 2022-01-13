@@ -13,6 +13,12 @@ if [[ $* == *T* ]]; then
 	echo "* Build tests detected..."
 	BUILD_TESTS="ON"
 fi
+## flag "B" provided -> build with preprocessor macro BENCHMARK
+BENCHMARK_MACRO="OFF"
+if [[ $* == *B* ]]; then 
+	echo "* BENCHMARK_MACRO detected..."
+	BENCHMARK_MACRO="ON"
+fi
 echo "-------------"
 
 # Create build directory
@@ -20,7 +26,7 @@ mkdir -p cmake/build
 pushd cmake/build
 
 # build
-cmake -DCMAKE_PREFIX_PATH=$HOME/src/builds/gRPC -DLEVELDB_PREFIX=$HOME/src/builds/leveldb -DBUILD_TESTS=$BUILD_TESTS ../..
+cmake -DCMAKE_PREFIX_PATH=$HOME/src/builds/gRPC -DLEVELDB_PREFIX=$HOME/src/builds/leveldb -DBUILD_TESTS=$BUILD_TESTS -DBENCHMARK_MACRO=$BENCHMARK_MACRO ../..
 make
 
 popd

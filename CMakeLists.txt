@@ -150,6 +150,13 @@ target_link_libraries(client
   ${_PROTOBUF_LIBPROTOBUF})
 target_include_directories(client PUBLIC ${utils_srcs})
 
+# check for BENCHMARK
+if(BENCHMARK_MACRO)
+target_compile_definitions(shard_master PUBLIC BENCHMARK)
+target_compile_definitions(volume_server PUBLIC BENCHMARK)
+target_compile_definitions(client PUBLIC BENCHMARK)
+endif(BENCHMARK_MACRO)
+
 # tests
 if(BUILD_TESTS)
   file(GLOB TEST_SOURCES tests/*/*.cc)

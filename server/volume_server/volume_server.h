@@ -68,6 +68,10 @@ class VolumeServer final : public VolumeServerService::Service {
     std::thread([this]() -> void {
       this->moveKeys();
     }).detach();
+
+#ifdef BENCHMARK
+    std::cout << "* BENCHMARK detected" << std::endl;
+#endif
   }
 
   ~VolumeServer() { delete this->db; }
