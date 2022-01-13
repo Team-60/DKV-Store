@@ -21,7 +21,6 @@ grpc::Status ShardMaster::Query(grpc::ServerContext* context, const Empty* reque
 
 grpc::Status ShardMaster::QueryConfigNum(grpc::ServerContext* context, const Empty* request, QueryConfigNumResponse* response) {
   // std::cout << "* Shardmaster: Query config called - " << this->config_num << std::endl;  // obviously comment afterwards
-
   response->set_config_num(this->config_num);
   return grpc::Status::OK;
 };
@@ -38,7 +37,7 @@ grpc::Status ShardMaster::Move(grpc::ServerContext* context, const MoveRequest* 
   }
 
   if (!serverExists) {
-    return grpc::Status(grpc::StatusCode::NOT_FOUND, "server doesn't exists");
+    return grpc::Status(grpc::StatusCode::NOT_FOUND, grpc_status_msg::VS_NOT_FOUND);
   }
 
   auto move_vs_addr = request->server();
@@ -76,7 +75,7 @@ grpc::Status ShardMaster::Join(grpc::ServerContext* context, const JoinRequest* 
   // check if already exists
   for (SMConfigEntry& config : this->sm_config) {
     if (config.vs_addr == request->server_addr()) {
-      return grpc::Status(grpc::StatusCode::ALREADY_EXISTS, "server already exists");
+      return grpc::Status(grpc::StatusCode::ALREADY_EXISTS, grpc_status_msg::VS_EXISTS);
     }
   }
 
@@ -109,7 +108,7 @@ grpc::Status ShardMaster::Leave(grpc::ServerContext* context, const LeaveRequest
   if (serverExists) {
     this->redistributeChunks();
   } else {
-    return grpc::Status(grpc::StatusCode::NOT_FOUND, "server not found");
+    return grpc::Status(grpc::StatusCode::NOT_FOUND, grpc_status_msg::VS_NOT_FOUND);
   }
 
   return grpc::Status::OK;

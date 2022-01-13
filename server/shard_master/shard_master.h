@@ -13,6 +13,11 @@
 
 using google::protobuf::Empty;
 
+namespace grpc_status_msg {
+const std::string VS_NOT_FOUND = "Server doesn't exist!";
+const std::string VS_EXISTS = "Server already exists!";
+}  // namespace grpc_status_msg
+
 class ShardMaster final : public ShardMasterService::Service {
  public:
   ShardMaster() {
