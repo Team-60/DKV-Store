@@ -1,3 +1,5 @@
+[![CMake](https://github.com/Team-60/DKV-Store/actions/workflows/cmake.yml/badge.svg?branch=main)](https://github.com/Team-60/DKV-Store/actions/workflows/cmake.yml)
+
 # DKV-Store
 **An on-disk, high-performant & consistent distributed key value store in C++**
 
