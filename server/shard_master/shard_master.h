@@ -34,6 +34,10 @@ class ShardMaster final : public ShardMasterService::Service {
     // config
     this->config_num = 0;  // INITIAL CONFIGURATION IS 0
     this->sm_config.clear();
+
+#ifdef BENCHMARK
+    std::cout << "* BENCHMARK detected" << std::endl;
+#endif
   }
 
   ~ShardMaster() { delete this->db; }

@@ -200,8 +200,10 @@ int main(int argc, char* argv[]) {
   std::string shard_master_addr = (argc > 1) ? argv[1] : SHARD_MASTER_ADDR;
   Client client(grpc::CreateChannel(shard_master_addr, grpc::InsecureChannelCredentials()));
 
-  // simple non-exhaustive sanity check
-
+// simple non-exhaustive sanity check
+#if BENCHMARK
+  std::cout << "* BENCHMARK detected" << std::endl;
+#else
   // key not found
   std::cout << "Response:-\n"
             << client.Get("key1") << '\n'
@@ -240,5 +242,7 @@ int main(int argc, char* argv[]) {
             << std::endl;
 
   std::cout << std::endl;
+#endif
+
   return 0;
 }
