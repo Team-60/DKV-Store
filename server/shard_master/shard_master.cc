@@ -5,6 +5,7 @@ grpc::Status ShardMaster::Query(grpc::ServerContext* context, const Empty* reque
   response->clear_config();
 
   // prepare response
+  this->mtx.lock();
   for (const SMConfigEntry& sm_config_entry : this->sm_config) {
     ConfigEntry* config_entry = response->add_config();
     config_entry->set_server_addr(sm_config_entry.vs_addr);
@@ -15,6 +16,7 @@ grpc::Status ShardMaster::Query(grpc::ServerContext* context, const Empty* reque
       shard->set_upper(sm_shard.upper);
     }
   }
+  this->mtx.unlock();
 
   return grpc::Status::OK;
 }
