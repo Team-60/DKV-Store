@@ -235,7 +235,8 @@ void VolumeServer::moveKeys() {
     std::string value;
     leveldb::Status s = this->db->Get(leveldb::ReadOptions(), key, &value);
     if (!s.ok()) {
-      std::cerr << "Error : moveKeys -> no such key to move / or key already moved" << std::endl;
+      std::cerr << "Error : Key to move not present yet, moving move request to the back of the queue" << std::endl;
+      move_queue.enqueue(key);
       continue;
     }
 
